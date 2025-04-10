@@ -1194,10 +1194,10 @@ function updateServoStatusUI() {
 function updateGamepadLabels() {
     const buttonLabels = {
         ps: {
-            rotationPlus: 'Square',
-            rotationMinus: 'Circle',
-            pitchPlus: 'Triangle',
-            pitchMinus: 'X',
+            rotationPlus: '□',
+            rotationMinus: '○',
+            pitchPlus: '△',
+            pitchMinus: '×',
             elbowPlus: 'R1',
             elbowMinus: 'L1',
             wristPitchPlus: '↑',
@@ -1212,28 +1212,28 @@ function updateGamepadLabels() {
             rotationMinus: 'A',
             pitchPlus: 'X',
             pitchMinus: 'B',
-            elbowPlus: 'R',
-            elbowMinus: 'L',
+            elbowPlus: 'R1',
+            elbowMinus: 'L1',
             wristPitchPlus: '↑',
             wristPitchMinus: '↓',
             wristRollPlus: '←',
             wristRollMinus: '→',
-            jawPlus: 'ZR',
-            jawMinus: 'ZL'
+            jawPlus: 'R2',
+            jawMinus: 'L2'
         },
         xbox: {
             rotationPlus: 'X',
             rotationMinus: 'B',
             pitchPlus: 'Y',
             pitchMinus: 'A',
-            elbowPlus: 'RB',
-            elbowMinus: 'LB',
+            elbowPlus: 'R1',
+            elbowMinus: 'L1',
             wristPitchPlus: '↑',
             wristPitchMinus: '↓',
             wristRollPlus: '←',
             wristRollMinus: '→',
-            jawPlus: 'RT',
-            jawMinus: 'LT'
+            jawPlus: 'R2',
+            jawMinus: 'L2'
         }
     };
 
