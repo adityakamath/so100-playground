@@ -162,52 +162,27 @@ function isJointWithinLimits(joint, newValue) {
  */
 export function setupKeyboardControls(robot) {
   const keyState = {};
-  // Get the keyboard control section element
-  const keyboardControlSection = document.getElementById('keyboardControlSection');
-  let keyboardActiveTimeout;
 
   // Get initial stepSize from the HTML slider
   const speedControl = document.getElementById('speedControl');
   let stepSize = speedControl ? MathUtils.degToRad(parseFloat(speedControl.value)) : MathUtils.degToRad(0.2);
-  
-  // 默认的按键-关节映射
-  const keyMappings = {
-    '1': { jointIndex: 0, direction: 1 },
-    'q': { jointIndex: 0, direction: -1 },
-    '2': { jointIndex: 1, direction: 1 },
-    'w': { jointIndex: 1, direction: -1 },
-    '3': { jointIndex: 2, direction: 1 },
-    'e': { jointIndex: 2, direction: -1 },
-    '4': { jointIndex: 3, direction: 1 },
-    'r': { jointIndex: 3, direction: -1 },
-    '5': { jointIndex: 4, direction: 1 },
-    't': { jointIndex: 4, direction: -1 },
-    '6': { jointIndex: 5, direction: 1 },
-    'y': { jointIndex: 5, direction: -1 },
-  };
-  
-  // 获取机器人实际的关节名称
+
+  // Get joint names from robot
   const jointNames = robot && robot.joints ? 
-    Object.keys(robot.joints).filter(name => robot.joints[name].jointType !== 'fixed') : [];
+      Object.keys(robot.joints).filter(name => robot.joints[name].jointType !== 'fixed') : [];
   console.log('Available joints:', jointNames);
-  
-  // Function to set the div as active
-  const setKeyboardSectionActive = () => {
-    if (keyboardControlSection) {
-      keyboardControlSection.classList.add('control-active');
-      
-      // Clear existing timeout if any
-      if (keyboardActiveTimeout) {
-        clearTimeout(keyboardActiveTimeout);
-      }
-      
-      // Set timeout to remove the active class after 2 seconds of inactivity
-      keyboardActiveTimeout = setTimeout(() => {
-        keyboardControlSection.classList.remove('control-active');
-      }, 2000);
-    }
+
+  // Function to check if a joint value is within its limits
+  const isJointWithinLimits = (joint, value) => {
+    if (!joint || !joint.jointType || joint.jointType === 'fixed') return false;
+    
+    // Get joint limits if they exist
+    const upperLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.upper : Infinity;
+    const lowerLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.lower : -Infinity;
+    
+    return value >= lowerLimit && value <= upperLimit;
   };
-  
+
   window.addEventListener('keydown', (e) => {
     const key = e.key.toLowerCase();
     keyState[key] = true;
@@ -215,10 +190,7 @@ export function setupKeyboardControls(robot) {
     // Add visual styling to show pressed key
     const keyElement = document.querySelector(`.key[data-key="${key}"]`);
     if (keyElement) {
-      keyElement.classList.add('key-pressed');
-      
-      // Highlight the keyboard control section
-      setKeyboardSectionActive();
+      keyElement.classList.add('pressed');
     }
   });
 
@@ -229,184 +201,47 @@ export function setupKeyboardControls(robot) {
     // Remove visual styling when key is released
     const keyElement = document.querySelector(`.key[data-key="${key}"]`);
     if (keyElement) {
-      keyElement.classList.remove('key-pressed');
+      keyElement.classList.remove('pressed');
     }
   });
 
-  // 添加速度控制功能
+  // Update stepSize when speed control changes
   if (speedControl) {
     speedControl.addEventListener('input', (e) => {
-      // 从滑块获取值 (0.5 到 10)，然后转换为弧度
-      const speedFactor = parseFloat(e.target.value);
-      stepSize = MathUtils.degToRad(speedFactor);
-      
-      // 更新速度显示
-      const speedDisplay = document.getElementById('speedValue');
-      if (speedDisplay) {
-        speedDisplay.textContent = speedFactor.toFixed(1);
-      }
+      stepSize = MathUtils.degToRad(parseFloat(e.target.value));
     });
   }
 
+  // Function to update joints based on keyboard input
   function updateJoints() {
-    if (!robot || !robot.joints) return;
+    if (!robot || !robot.joints) {
+      return;
+    }
 
-    let keyPressed = false;
+    let hasInput = false;
 
-    // 处理每个按键映射
-    Object.keys(keyState).forEach(key => {
-      if (keyState[key] && keyMappings[key]) {
-        keyPressed = true;
-        const { jointIndex, direction } = keyMappings[key];
-        
-        // 根据索引获取关节名称（如果可用）
-        if (jointIndex < jointNames.length) {
+    // Process all key mappings
+    Object.entries(keyMappings).forEach(([key, mappings]) => {
+      if (keyState[key]) {
+        mappings.forEach(({ jointIndex, direction }) => {
           const jointName = jointNames[jointIndex];
-          
-          // 检查关节是否存在于机器人中
-          if (robot.joints[jointName]) {
-            // 如果连接到真实机器人，先检查该舵机是否有错误状态
-            const servoId = jointIndex + 1;
-            if (isConnectedToRealRobot && servoCommStatus[servoId].status === 'error') {
-              console.warn(`Servo ${servoId} is in error state. Virtual movement prevented.`);
-              return; // 跳过这个关节的更新
-            }
-            
-            // 获取当前关节值
-            const currentValue = robot.joints[jointName].angle;
-            // 计算新的关节值
-            const newValue = currentValue + direction * stepSize;
-            
-            // 检查是否超出关节限制
-            if (!isJointWithinLimits(robot.joints[jointName], newValue)) {
-              console.warn(`Joint ${jointName} would exceed its limits. Movement prevented.`);
-              // 显示虚拟关节限位提醒
-              showAlert('joint', `Joint ${jointName} has reached its limit!`);
-              return; // 跳过这个关节的更新
-            }
-            
-            // 如果连接到真实机器人，同时控制真实舵机
-            if (isConnectedToRealRobot) {
-              // 注意: 真实舵机ID从1到6，而jointIndex从0到5
-              
-              // 计算舵机相对位移量 (角度变化量转换为舵机步数)
-              // 大约4096步对应一圈(2π)
-              const stepChange = Math.round((direction * stepSize) * (4096 / (2 * Math.PI)));
-              
-              // 计算新的位置值
-              let newPosition = (servoCurrentPositions[servoId] + stepChange) % 4096;
-              // if (newPosition < 0) newPosition += 4096; // 处理负数情况
-              
-              // 重要说明：虚拟关节与真实舵机使用不同的位置和限制系统
-              // 虚拟关节使用弧度制，受URDF中定义的限制约束
-              // 真实舵机使用0-4095的步数范围，没有应用虚拟关节的限制
-              
-              // 暂存舵机位置（虚拟舵机还没更新）
-              const prevPosition = servoCurrentPositions[servoId];
-              // 更新当前位置记录
-              servoCurrentPositions[servoId] = newPosition;
-              
-              // 更新舵机状态为待处理
-              servoCommStatus[servoId].status = 'pending';
-              updateServoStatusUI();
-              
-              // 使用队列系统控制舵机，防止并发访问
-              // 等待舵机移动结果，决定是否更新虚拟关节
-              writeServoPosition(servoId, newPosition)
-                .then(success => {
-                  // 如果舵机移动成功，更新最后成功位置并设置虚拟关节位置
-                  if (success) {
-                    // 更新虚拟关节
-                    robot.joints[jointName].setJointValue(newValue);
-                    // 更新最后安全位置
-                    servoLastSafePositions[servoId] = newPosition;
-
-                    // 更新舵机状态为成功
-                    servoCommStatus[servoId].status = 'success';
-                    updateServoStatusUI();
-                  } else {
-                    // 如果舵机移动失败，恢复当前位置记录
-                    servoCurrentPositions[servoId] = prevPosition;
-                    console.warn(`Failed to move servo ${servoId}. Virtual joint not updated.`);
-                    
-                    // 显示舵机错误提醒
-                    showAlert('servo', `Servo ${servoId} movement failed!`);
-                    
-                    // 尝试将舵机恢复到最后一个安全位置
-                    if (servoLastSafePositions[servoId] !== prevPosition) {
-                      console.log(`Attempting to move servo ${servoId} back to last safe position...`);
-                      writeServoPosition(servoId, servoLastSafePositions[servoId], true)
-                        .then(recoverySuccess => {
-                          if (recoverySuccess) {
-                            console.log(`Successfully moved servo ${servoId} back to safe position.`);
-                            servoCurrentPositions[servoId] = servoLastSafePositions[servoId];
-                          } else {
-                            console.error(`Failed to move servo ${servoId} back to safe position.`);
-                            // 显示舵机恢复错误提醒
-                            showAlert('servo', `Servo ${servoId} could not recover to safe position!`, 4000);
-                          }
-                        })
-                        .catch(error => {
-                          console.error(`Error moving servo ${servoId} back to safe position:`, error);
-                          // 显示舵机恢复错误提醒
-                          showAlert('servo', `Error recovering servo ${servoId}: ${error.message || 'Unknown error'}`, 4000);
-                        });
-                    }
-                  }
-                })
-                .catch(error => {
-                  // 舵机控制失败，不更新虚拟关节，恢复当前位置记录
-                  servoCurrentPositions[servoId] = prevPosition;
-                  console.error(`Error controlling servo ${servoId}:`, error);
-                  servoCommStatus[servoId].status = 'error';
-                  servoCommStatus[servoId].lastError = error.message || 'Communication error';
-                  updateServoStatusUI();
-                  
-                  // 显示舵机错误提醒
-                  showAlert('servo', `Servo ${servoId} error: ${error.message || 'Communication failed'}`);
-                  
-                  // 尝试将舵机恢复到最后一个安全位置
-                  if (servoLastSafePositions[servoId] !== prevPosition) {
-                    console.log(`Attempting to move servo ${servoId} back to last safe position...`);
-                    writeServoPosition(servoId, servoLastSafePositions[servoId], true)
-                      .then(recoverySuccess => {
-                        if (recoverySuccess) {
-                          console.log(`Successfully moved servo ${servoId} back to safe position.`);
-                          servoCurrentPositions[servoId] = servoLastSafePositions[servoId];
-                        } else {
-                          console.error(`Failed to move servo ${servoId} back to safe position.`);
-                          // 显示舵机恢复错误提醒
-                          showAlert('servo', `Servo ${servoId} could not recover to safe position!`, 4000);
-                        }
-                      })
-                      .catch(error => {
-                        console.error(`Error moving servo ${servoId} back to safe position:`, error);
-                        // 显示舵机恢复错误提醒
-                        showAlert('servo', `Error recovering servo ${servoId}: ${error.message || 'Unknown error'}`, 4000);
-                      });
-                  }
-                });
-            } else {
-              // 如果没有连接真实机器人，直接更新虚拟关节
-              robot.joints[jointName].setJointValue(newValue);
+          if (jointName && robot.joints[jointName]) {
+            const joint = robot.joints[jointName];
+            const newValue = joint.angle + (direction * stepSize);
+            if (isJointWithinLimits(joint, newValue)) {
+              joint.setJointValue(newValue);
+              hasInput = true;
             }
           }
-        }
+        });
       }
     });
 
-    // If any key is pressed, set the keyboard section as active
-    if (keyPressed) {
-      setKeyboardSectionActive();
-    }
-
-    // 更新机器人
-    if (robot.updateMatrixWorld) {
+    if (hasInput) {
       robot.updateMatrixWorld(true);
     }
   }
 
-  // 返回更新函数，以便可以在渲染循环中调用
   return updateJoints;
 }
 
@@ -517,17 +352,6 @@ export function setupGamepadControls(robot) {
         });
     }
 
-    // Function to check if a joint value is within its limits
-    const isJointWithinLimits = (joint, value) => {
-        if (!joint || !joint.jointType || joint.jointType === 'fixed') return false;
-        
-        // Get joint limits if they exist
-        const upperLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.upper : Infinity;
-        const lowerLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.lower : -Infinity;
-        
-        return value >= lowerLimit && value <= upperLimit;
-    };
-
     // Function to highlight a button element
     const highlightButton = (buttonId, isPressed) => {
         const buttonElement = document.getElementById(buttonId);
@@ -538,6 +362,31 @@ export function setupGamepadControls(robot) {
                 buttonElement.classList.remove('pressed');
             }
         }
+    };
+
+    // Function to handle button pairs
+    const handleButtonPair = (mapping, jointType) => {
+        const [buttonPlus, buttonMinus] = mapping.buttons;
+        const buttonPlusPressed = gamepad.buttons[buttonPlus].pressed;
+        const buttonMinusPressed = gamepad.buttons[buttonMinus].pressed;
+
+        // Highlight buttons based on press state
+        highlightButton(`${jointType}Plus`, buttonPlusPressed);
+        highlightButton(`${jointType}Minus`, buttonMinusPressed);
+
+        if (buttonPlusPressed || buttonMinusPressed) {
+            const jointName = jointNames[mapping.jointIndex];
+            if (jointName && robot.joints[jointName]) {
+                const joint = robot.joints[jointName];
+                const direction = buttonPlusPressed ? 1 : -1;
+                const newValue = joint.angle + (direction * stepSize);
+                if (isJointWithinLimits(joint, newValue)) {
+                    joint.setJointValue(newValue);
+                    return true;
+                }
+            }
+        }
+        return false;
     };
 
     // Function to update joints based on gamepad input
@@ -554,40 +403,15 @@ export function setupGamepadControls(robot) {
 
         let hasInput = false;
 
-        // Handle button inputs
-        const handleButtonPair = (mapping, jointType) => {
-            const [buttonPlus, buttonMinus] = mapping.buttons;
-            const buttonPlusPressed = gamepad.buttons[buttonPlus].pressed;
-            const buttonMinusPressed = gamepad.buttons[buttonMinus].pressed;
-
-            // Highlight buttons based on press state
-            highlightButton(`${jointType}Plus`, buttonPlusPressed);
-            highlightButton(`${jointType}Minus`, buttonMinusPressed);
-
-            if (buttonPlusPressed || buttonMinusPressed) {
-                const jointName = jointNames[mapping.jointIndex];
-                if (jointName && robot.joints[jointName]) {
-                    const joint = robot.joints[jointName];
-                    const direction = buttonPlusPressed ? 1 : -1;
-                    const newValue = joint.angle + (direction * stepSize);
-                    if (isJointWithinLimits(joint, newValue)) {
-                        joint.setJointValue(newValue);
-                        hasInput = true;
-                    }
-                }
-            }
-        };
-
         // Process all mappings using button pairs
-        handleButtonPair(gamepadMappings.rotation, 'rotation');
-        handleButtonPair(gamepadMappings.pitch, 'pitch');
-        handleButtonPair(gamepadMappings.elbow, 'elbow');
-        handleButtonPair(gamepadMappings.wristPitch, 'wristPitch');
-        handleButtonPair(gamepadMappings.wristRoll, 'wristRoll');
-        handleButtonPair(gamepadMappings.jaw, 'jaw');
+        hasInput |= handleButtonPair(gamepadMappings.rotation, 'rotation');
+        hasInput |= handleButtonPair(gamepadMappings.pitch, 'pitch');
+        hasInput |= handleButtonPair(gamepadMappings.elbow, 'elbow');
+        hasInput |= handleButtonPair(gamepadMappings.wristPitch, 'wristPitch');
+        hasInput |= handleButtonPair(gamepadMappings.wristRoll, 'wristRoll');
+        hasInput |= handleButtonPair(gamepadMappings.jaw, 'jaw');
 
         if (hasInput) {
-            setGamepadSectionActive();
             robot.updateMatrixWorld(true);
         }
     }
