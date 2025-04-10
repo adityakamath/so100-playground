@@ -496,37 +496,34 @@
             }
 
             /* Gamepad type selector styles */
-            .gamepad-type-selector {
+            .gamepad-type-container {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                margin-top: 10px;
-                margin-bottom: 15px;
+                margin-bottom: 8px;
             }
 
-            .gamepad-type-selector label {
+            .gamepad-type-label {
+                flex: 0 0 120px;
+                text-align: left;
+                padding-right: 15px;
+                font-weight: 500;
+                font-size: 16px;
+            }
+
+            .gamepad-type-select {
+                width: 120px;
+                padding: 5px 10px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 4px;
                 color: white;
                 font-size: 14px;
-                min-width: 100px;
             }
 
-            .gamepad-type-selector select {
-                flex: 1;
-                padding: 6px;
-                border-radius: 4px;
-                background: rgba(255, 255, 255, 0.2);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                color: white;
-                cursor: pointer;
-            }
-
-            .gamepad-type-selector select:hover {
-                background: rgba(255, 255, 255, 0.25);
-            }
-
-            .gamepad-type-selector select option {
-                background: #333;
-                color: white;
+            .gamepad-type-select:focus {
+                outline: none;
+                border-color: rgba(255, 255, 255, 0.4);
+                background: rgba(255, 255, 255, 0.15);
             }
         </style>
     </head>
@@ -616,10 +613,10 @@
                             </div>
                         </div>
 
-                        <div class="gamepad-type-selector">
-                            <label for="gamepadType">Gamepad Type:</label>
-                            <select id="gamepadType">
-                                <option value="playstation" selected>PlayStation</option>
+                        <div class="gamepad-type-container">
+                            <div class="gamepad-type-label">Gamepad Type:</div>
+                            <select id="gamepadType" class="gamepad-type-select">
+                                <option value="ps">PlayStation</option>
                                 <option value="nintendo">Nintendo</option>
                                 <option value="xbox">Xbox</option>
                             </select>
@@ -628,11 +625,11 @@
                         <div class="control-info" style="margin-top: 15px;">
                             <div class="joint-control">
                                 <div class="joint-name">Rotation:</div>
-                                <div class="joint-keys"><span class="key" data-key="rotationPlus">Left</span> <span class="direction-plus">+</span> <span class="key" data-key="rotationMinus">Right</span> <span class="direction-minus">-</span></div>
+                                <div class="joint-keys"><span class="key" data-key="rotationPlus" data-ps="□" data-nintendo="Y" data-xbox="X">□</span> <span class="direction-plus">+</span> <span class="key" data-key="rotationMinus" data-ps="○" data-nintendo="A" data-xbox="B">○</span> <span class="direction-minus">-</span></div>
                             </div>
                             <div class="joint-control">
                                 <div class="joint-name">Pitch:</div>
-                                <div class="joint-keys"><span class="key" data-key="pitchPlus">Top</span> <span class="direction-plus">+</span> <span class="key" data-key="pitchMinus">Bottom</span> <span class="direction-minus">-</span></div>
+                                <div class="joint-keys"><span class="key" data-key="pitchPlus" data-ps="△" data-nintendo="X" data-xbox="Y">△</span> <span class="direction-plus">+</span> <span class="key" data-key="pitchMinus" data-ps="×" data-nintendo="B" data-xbox="A">×</span> <span class="direction-minus">-</span></div>
                             </div>
                             <div class="joint-control">
                                 <div class="joint-name">Elbow:</div>
