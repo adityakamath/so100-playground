@@ -440,18 +440,18 @@ export function setupGamepadControls(robot) {
 
     // Gamepad button mappings for robot joints
     const gamepadMappings = {
-        // Right stick X-axis (axis[2]) - Rotation
-        rotation: { jointIndex: 0, axis: 2 },
-        // Right stick Y-axis (axis[3]) - Pitch
-        pitch: { jointIndex: 1, axis: 3 },
-        // Left stick Y-axis (axis[1]) - Elbow
-        elbow: { jointIndex: 2, axis: 1 },
+        // Square/X and Triangle/Y - Rotation
+        rotation: { jointIndex: 0, buttons: [0, 3] }, // Square/X: 0, Triangle/Y: 3
+        // Cross/A and Circle/B - Pitch
+        pitch: { jointIndex: 1, buttons: [1, 2] }, // Cross/A: 1, Circle/B: 2
+        // L1/LB and R1/RB - Elbow
+        elbow: { jointIndex: 2, buttons: [4, 5] }, // L1/LB: 4, R1/RB: 5
         // D-pad up/down - Wrist Pitch
         wristPitch: { jointIndex: 3, buttons: [12, 13] }, // Up: 12, Down: 13
         // D-pad left/right - Wrist Roll
         wristRoll: { jointIndex: 4, buttons: [14, 15] }, // Left: 14, Right: 15
-        // Triggers (L2/R2) - Jaw
-        jaw: { jointIndex: 5, buttons: [6, 7] } // L2: 6, R2: 7
+        // L2/LT and R2/RT - Jaw
+        jaw: { jointIndex: 5, buttons: [6, 7] } // L2/LT: 6, R2/RT: 7
     };
 
     // Function to set the gamepad section as active
@@ -542,22 +542,6 @@ export function setupGamepadControls(robot) {
 
         let hasInput = false;
 
-        // Handle analog stick inputs
-        const handleAxisInput = (mapping, deadzone = 0.1) => {
-            const value = gamepad.axes[mapping.axis];
-            if (Math.abs(value) > deadzone) {
-                const jointName = jointNames[mapping.jointIndex];
-                if (jointName && robot.joints[jointName]) {
-                    const joint = robot.joints[jointName];
-                    const newValue = joint.angle + (-value * stepSize); // Invert value for more intuitive control
-                    if (isJointWithinLimits(joint, newValue)) {
-                        joint.setJointValue(newValue);
-                        hasInput = true;
-                    }
-                }
-            }
-        };
-
         // Handle button inputs
         const handleButtonPair = (mapping) => {
             const [buttonPlus, buttonMinus] = mapping.buttons;
@@ -575,10 +559,10 @@ export function setupGamepadControls(robot) {
             }
         };
 
-        // Process all mappings
-        handleAxisInput(gamepadMappings.rotation);
-        handleAxisInput(gamepadMappings.pitch);
-        handleAxisInput(gamepadMappings.elbow);
+        // Process all mappings using button pairs
+        handleButtonPair(gamepadMappings.rotation);
+        handleButtonPair(gamepadMappings.pitch);
+        handleButtonPair(gamepadMappings.elbow);
         handleButtonPair(gamepadMappings.wristPitch);
         handleButtonPair(gamepadMappings.wristRoll);
         handleButtonPair(gamepadMappings.jaw);
