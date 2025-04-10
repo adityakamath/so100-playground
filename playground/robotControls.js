@@ -441,17 +441,17 @@ export function setupGamepadControls(robot) {
     // Gamepad button mappings for robot joints
     const gamepadMappings = {
         // Square/X and Triangle/Y - Rotation
-        rotation: { jointIndex: 0, buttons: [2, 1] }, // Face-Left: 0, Face-Right: 3
+        rotation: { jointIndex: 0, buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] }, // Face-Left: 2, Face-Right: 1
         // Cross/A and Circle/B - Pitch
-        pitch: { jointIndex: 1, buttons: [3, 0] }, // Face-Top: 1, Face-Bottom: 2
+        pitch: { jointIndex: 1, buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
         // L1/LB and R1/RB - Elbow
-        elbow: { jointIndex: 2, buttons: [4, 5] }, // L1/LB: 4, R1/RB: 5
+        elbow: { jointIndex: 2, buttons: [4, 5], labels: ['elbowPlus', 'elbowMinus'] }, // L1/LB: 4, R1/RB: 5
         // D-pad up/down - Wrist Pitch
-        wristPitch: { jointIndex: 3, buttons: [12, 13] }, // DPad-Up: 12, DPad-Down: 13
+        wristPitch: { jointIndex: 3, buttons: [12, 13], labels: ['wristPitchPlus', 'wristPitchMinus'] }, // Up: 12, Down: 13
         // D-pad left/right - Wrist Roll
-        wristRoll: { jointIndex: 4, buttons: [14, 15] }, // DPad-Left: 14, DPad-Right: 15
+        wristRoll: { jointIndex: 4, buttons: [15, 14], labels: ['wristRollPlus', 'wristRollMinus'] }, // Right: 15, Left: 14
         // L2/LT and R2/RT - Jaw
-        jaw: { jointIndex: 5, buttons: [6, 7] } // L2/LT: 6, R2/RT: 7
+        jaw: { jointIndex: 5, buttons: [6, 7], labels: ['jawPlus', 'jawMinus'] } // L2/LT: 6, R2/RT: 7
     };
 
     // Function to set the gamepad section as active
@@ -530,12 +530,12 @@ export function setupGamepadControls(robot) {
 
     // Function to highlight a button element
     const highlightButton = (buttonId, isPressed) => {
-        const buttonElement = document.getElementById(buttonId);
+        const buttonElement = document.querySelector(`.key[data-key="${buttonId}"]`);
         if (buttonElement) {
             if (isPressed) {
-                buttonElement.classList.add('pressed');
+                buttonElement.classList.add('key-pressed');
             } else {
-                buttonElement.classList.remove('pressed');
+                buttonElement.classList.remove('key-pressed');
             }
         }
     };
