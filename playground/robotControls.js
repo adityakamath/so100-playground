@@ -426,6 +426,11 @@ export function setupGamepadControls(robot) {
     const speedControl = document.getElementById('speedControl');
     let stepSize = speedControl ? MathUtils.degToRad(parseFloat(speedControl.value)) : MathUtils.degToRad(0.2);
 
+    // Get joint names from robot
+    const jointNames = robot && robot.joints ? 
+        Object.keys(robot.joints).filter(name => robot.joints[name].jointType !== 'fixed') : [];
+    console.log('Available joints:', jointNames);
+
     // Update stepSize when speed control changes
     if (speedControl) {
         speedControl.addEventListener('input', (e) => {
@@ -512,9 +517,20 @@ export function setupGamepadControls(robot) {
         });
     }
 
+    // Function to check if a joint value is within its limits
+    const isJointWithinLimits = (joint, value) => {
+        if (!joint || !joint.jointType || joint.jointType === 'fixed') return false;
+        
+        // Get joint limits if they exist
+        const upperLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.upper : Infinity;
+        const lowerLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.lower : -Infinity;
+        
+        return value >= lowerLimit && value <= upperLimit;
+    };
+
     // Function to update joints based on gamepad input
     function updateJoints() {
-        if (!isGamepadConnected || !gamepad) {
+        if (!isGamepadConnected || !gamepad || !robot || !robot.joints) {
             return;
         }
 
@@ -530,18 +546,13 @@ export function setupGamepadControls(robot) {
         const handleAxisInput = (mapping, deadzone = 0.1) => {
             const value = gamepad.axes[mapping.axis];
             if (Math.abs(value) > deadzone) {
-                const joint = robot.joints[jointNames[mapping.jointIndex]];
-                if (joint) {
-                    const newValue = joint.jointValue + (value * stepSize);
+                const jointName = jointNames[mapping.jointIndex];
+                if (jointName && robot.joints[jointName]) {
+                    const joint = robot.joints[jointName];
+                    const newValue = joint.angle + (-value * stepSize); // Invert value for more intuitive control
                     if (isJointWithinLimits(joint, newValue)) {
-                        joint.jointValue = newValue;
-                        if (isConnectedToRealRobot) {
-                            const servoId = mapping.jointIndex + 1;
-                            writeServoPosition(servoId, joint.jointValue);
-                        }
+                        joint.setJointValue(newValue);
                         hasInput = true;
-                    } else {
-                        showAlert('joint', `Joint ${jointNames[mapping.jointIndex]} at limit`);
                     }
                 }
             }
@@ -551,19 +562,14 @@ export function setupGamepadControls(robot) {
         const handleButtonPair = (mapping) => {
             const [buttonPlus, buttonMinus] = mapping.buttons;
             if (gamepad.buttons[buttonPlus].pressed || gamepad.buttons[buttonMinus].pressed) {
-                const joint = robot.joints[jointNames[mapping.jointIndex]];
-                if (joint) {
+                const jointName = jointNames[mapping.jointIndex];
+                if (jointName && robot.joints[jointName]) {
+                    const joint = robot.joints[jointName];
                     const direction = gamepad.buttons[buttonPlus].pressed ? 1 : -1;
-                    const newValue = joint.jointValue + (direction * stepSize);
+                    const newValue = joint.angle + (direction * stepSize);
                     if (isJointWithinLimits(joint, newValue)) {
-                        joint.jointValue = newValue;
-                        if (isConnectedToRealRobot) {
-                            const servoId = mapping.jointIndex + 1;
-                            writeServoPosition(servoId, joint.jointValue);
-                        }
+                        joint.setJointValue(newValue);
                         hasInput = true;
-                    } else {
-                        showAlert('joint', `Joint ${jointNames[mapping.jointIndex]} at limit`);
                     }
                 }
             }
@@ -579,6 +585,7 @@ export function setupGamepadControls(robot) {
 
         if (hasInput) {
             setGamepadSectionActive();
+            robot.updateMatrixWorld(true);
         }
     }
 
