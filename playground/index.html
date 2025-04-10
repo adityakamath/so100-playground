@@ -381,38 +381,27 @@
                 visibility: hidden;
                 position: absolute;
                 top: -90px;
-                left: 50%;
-                transform: translateX(-50%);
+                right: 0;
                 background: rgba(0, 0, 0, 0.9);
                 border: 1px solid rgba(255, 255, 255, 0.2);
                 color: white;
                 border-radius: 4px;
-                padding: 15px;
-                width: 300px;
-                font-size: 14px;
+                padding: 10px;
+                width: 250px;
+                font-size: 12px;
                 z-index: 1002;
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
                 opacity: 0;
                 transition: opacity 0.3s;
             }
             
-            .tooltip strong {
-                display: block;
-                margin-bottom: 10px;
-            }
-            
             .tooltip ul {
-                margin: 0;
+                margin: 5px 0;
                 padding-left: 20px;
             }
             
             .tooltip li {
-                margin-bottom: 8px;
-                line-height: 1.4;
-            }
-
-            .tooltip li:last-child {
-                margin-bottom: 0;
+                margin-bottom: 5px;
             }
             
             .help-icon:hover .tooltip,
@@ -481,6 +470,18 @@
             @keyframes fadeInOut {
                 0% { opacity: 0; transform: translate(-50%, -20px); }
                 100% { opacity: 1; transform: translate(-50%, 0); }
+            }
+
+            /* Specific positioning for gamepad controls tooltip */
+            #gamepadControlSection .tooltip {
+                top: auto;
+                bottom: 40px;
+                right: -10px;
+            }
+
+            /* Ensure the gamepad section's help icon is properly positioned */
+            #gamepadControlSection .help-wrapper {
+                position: relative;
             }
         </style>
     </head>
