@@ -60,23 +60,6 @@ let isProcessingQueue = false;
 
 let currentGamepadType = 'ps'; // Default to PlayStation layout
 
-// Joint name mapping for consistent alerts
-const jointDisplayNames = {
-    'Base_Rotation': 'Base Rotation',
-    'Shoulder_Pitch': 'Shoulder Pitch',
-    'Elbow': 'Elbow',
-    'Wrist_Pitch': 'Wrist Pitch',
-    'Wrist_Roll': 'Wrist Roll',
-    'Jaw': 'Jaw',
-    // Mapping for gamepad control types to match URDF joint names
-    'rotation': 'Base Rotation',
-    'pitch': 'Shoulder Pitch',
-    'elbow': 'Elbow',
-    'wristPitch': 'Wrist Pitch',
-    'wristRoll': 'Wrist Roll',
-    'jaw': 'Jaw'
-};
-
 /**
  * Get consistent display name for a joint
  * @param {string} jointName - Original joint name from URDF
@@ -87,10 +70,10 @@ function getJointDisplayName(jointName) {
 }
 
 /**
- * 显示警告提醒
- * @param {string} type - 提醒类型 ('joint' 虚拟关节限位, 'servo' 真实舵机错误)
- * @param {string} message - 显示的消息
- * @param {number} duration - 显示持续时间(毫秒)，默认3秒
+ * Show warning alerts
+ * @param {string} type - Alert type ('joint' for virtual joint limits, 'servo' for real servo errors)
+ * @param {string} message - Message to display
+ * @param {number} duration - Display duration in milliseconds, default 3 seconds
  */
 function showAlert(type, message, duration = 3000) {
   const alertId = type === 'joint' ? 'jointLimitAlert' : 'servoLimitAlert';
