@@ -519,28 +519,6 @@ export function setupGamepadControls(robot) {
         });
     }
 
-    // Function to check if a joint value is within its limits
-    const isJointWithinLimits = (joint, newValue) => {
-        // Use the same joint limit checking as the main function
-        // If joint type is continuous or fixed, no limits
-        if (joint.jointType === 'continuous' || joint.jointType === 'fixed') {
-            return true;
-        }
-        
-        // If joint has ignoreLimits flag, also return true
-        if (joint.ignoreLimits) {
-            return true;
-        }
-        
-        // For single DOF joints, check against upper/lower limits
-        if (!Array.isArray(newValue)) {
-            return newValue >= joint.limit.lower && newValue <= joint.limit.upper;
-        }
-        
-        // Multi-DOF joints would need more complex handling
-        return true;
-    };
-
     // Function to highlight a button element
     const highlightButton = (buttonId, isPressed) => {
         const buttonElement = document.querySelector(`.key[data-key="${buttonId}"]`);
