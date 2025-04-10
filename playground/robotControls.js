@@ -1192,48 +1192,38 @@ function updateServoStatusUI() {
 }
 
 function updateGamepadLabels() {
+    const commonLabels = {
+        elbowPlus: 'R1',
+        elbowMinus: 'L1',
+        wristPitchPlus: '↑',
+        wristPitchMinus: '↓',
+        wristRollPlus: '←',
+        wristRollMinus: '→',
+        jawPlus: 'R2',
+        jawMinus: 'L2'
+    };
+
     const buttonLabels = {
         ps: {
             rotationPlus: '□',
             rotationMinus: '○',
             pitchPlus: '△',
             pitchMinus: '×',
-            elbowPlus: 'R1',
-            elbowMinus: 'L1',
-            wristPitchPlus: '↑',
-            wristPitchMinus: '↓',
-            wristRollPlus: '←',
-            wristRollMinus: '→',
-            jawPlus: 'R2',
-            jawMinus: 'L2'
+            ...commonLabels
         },
         nintendo: {
             rotationPlus: 'Y',
             rotationMinus: 'A',
             pitchPlus: 'X',
             pitchMinus: 'B',
-            elbowPlus: 'R1',
-            elbowMinus: 'L1',
-            wristPitchPlus: '↑',
-            wristPitchMinus: '↓',
-            wristRollPlus: '←',
-            wristRollMinus: '→',
-            jawPlus: 'R2',
-            jawMinus: 'L2'
+            ...commonLabels
         },
         xbox: {
             rotationPlus: 'X',
             rotationMinus: 'B',
             pitchPlus: 'Y',
             pitchMinus: 'A',
-            elbowPlus: 'R1',
-            elbowMinus: 'L1',
-            wristPitchPlus: '↑',
-            wristPitchMinus: '↓',
-            wristRollPlus: '←',
-            wristRollMinus: '→',
-            jawPlus: 'R2',
-            jawMinus: 'L2'
+            ...commonLabels
         }
     };
 
