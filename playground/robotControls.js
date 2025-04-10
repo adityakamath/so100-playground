@@ -528,6 +528,18 @@ export function setupGamepadControls(robot) {
         return value >= lowerLimit && value <= upperLimit;
     };
 
+    // Function to highlight a button element
+    const highlightButton = (buttonId, isPressed) => {
+        const buttonElement = document.getElementById(buttonId);
+        if (buttonElement) {
+            if (isPressed) {
+                buttonElement.classList.add('pressed');
+            } else {
+                buttonElement.classList.remove('pressed');
+            }
+        }
+    };
+
     // Function to update joints based on gamepad input
     function updateJoints() {
         if (!isGamepadConnected || !gamepad || !robot || !robot.joints) {
@@ -543,13 +555,20 @@ export function setupGamepadControls(robot) {
         let hasInput = false;
 
         // Handle button inputs
-        const handleButtonPair = (mapping) => {
+        const handleButtonPair = (mapping, jointType) => {
             const [buttonPlus, buttonMinus] = mapping.buttons;
-            if (gamepad.buttons[buttonPlus].pressed || gamepad.buttons[buttonMinus].pressed) {
+            const buttonPlusPressed = gamepad.buttons[buttonPlus].pressed;
+            const buttonMinusPressed = gamepad.buttons[buttonMinus].pressed;
+
+            // Highlight buttons based on press state
+            highlightButton(`${jointType}Plus`, buttonPlusPressed);
+            highlightButton(`${jointType}Minus`, buttonMinusPressed);
+
+            if (buttonPlusPressed || buttonMinusPressed) {
                 const jointName = jointNames[mapping.jointIndex];
                 if (jointName && robot.joints[jointName]) {
                     const joint = robot.joints[jointName];
-                    const direction = gamepad.buttons[buttonPlus].pressed ? 1 : -1;
+                    const direction = buttonPlusPressed ? 1 : -1;
                     const newValue = joint.angle + (direction * stepSize);
                     if (isJointWithinLimits(joint, newValue)) {
                         joint.setJointValue(newValue);
@@ -560,12 +579,12 @@ export function setupGamepadControls(robot) {
         };
 
         // Process all mappings using button pairs
-        handleButtonPair(gamepadMappings.rotation);
-        handleButtonPair(gamepadMappings.pitch);
-        handleButtonPair(gamepadMappings.elbow);
-        handleButtonPair(gamepadMappings.wristPitch);
-        handleButtonPair(gamepadMappings.wristRoll);
-        handleButtonPair(gamepadMappings.jaw);
+        handleButtonPair(gamepadMappings.rotation, 'rotation');
+        handleButtonPair(gamepadMappings.pitch, 'pitch');
+        handleButtonPair(gamepadMappings.elbow, 'elbow');
+        handleButtonPair(gamepadMappings.wristPitch, 'wristPitch');
+        handleButtonPair(gamepadMappings.wristRoll, 'wristRoll');
+        handleButtonPair(gamepadMappings.jaw, 'jaw');
 
         if (hasInput) {
             setGamepadSectionActive();
