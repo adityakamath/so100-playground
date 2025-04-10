@@ -58,6 +58,8 @@ let servoCommStatus = {
 let commandQueue = [];
 let isProcessingQueue = false;
 
+let currentGamepadType = 'ps'; // Default to PlayStation layout
+
 /**
  * 显示警告提醒
  * @param {string} type - 提醒类型 ('joint' 虚拟关节限位, 'servo' 真实舵机错误)
@@ -1188,3 +1190,73 @@ function updateServoStatusUI() {
     }
   }
 }
+
+function updateGamepadLabels() {
+    const buttonLabels = {
+        ps: {
+            0: 'X',
+            1: 'Circle',
+            2: 'Square',
+            3: 'Triangle',
+            4: 'L1',
+            5: 'R1',
+            6: 'L2',
+            7: 'R2',
+            12: 'D-Up',
+            13: 'D-Down',
+            14: 'D-Left',
+            15: 'D-Right'
+        },
+        nintendo: {
+            0: 'B',
+            1: 'A',
+            2: 'Y',
+            3: 'X',
+            4: 'L',
+            5: 'R',
+            6: 'ZL',
+            7: 'ZR',
+            12: 'D-Up',
+            13: 'D-Down',
+            14: 'D-Left',
+            15: 'D-Right'
+        },
+        xbox: {
+            0: 'A',
+            1: 'B',
+            2: 'X',
+            3: 'Y',
+            4: 'LB',
+            5: 'RB',
+            6: 'LT',
+            7: 'RT',
+            12: 'D-Up',
+            13: 'D-Down',
+            14: 'D-Left',
+            15: 'D-Right'
+        }
+    };
+
+    // Update all button labels in the UI
+    const selects = document.querySelectorAll('select[data-mapping-type]');
+    selects.forEach(select => {
+        const options = select.querySelectorAll('option');
+        options.forEach(option => {
+            const buttonId = option.value;
+            if (buttonLabels[currentGamepadType][buttonId]) {
+                option.textContent = buttonLabels[currentGamepadType][buttonId];
+            }
+        });
+    });
+}
+
+// Add event listener for gamepad type selection
+document.getElementById('gamepadType').addEventListener('change', (event) => {
+    currentGamepadType = event.target.value;
+    updateGamepadLabels();
+});
+
+// Call updateGamepadLabels on initial load
+document.addEventListener('DOMContentLoaded', () => {
+    updateGamepadLabels();
+});
