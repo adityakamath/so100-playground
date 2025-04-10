@@ -520,14 +520,25 @@ export function setupGamepadControls(robot) {
     }
 
     // Function to check if a joint value is within its limits
-    const isJointWithinLimits = (joint, value) => {
-        if (!joint || !joint.jointType || joint.jointType === 'fixed') return false;
+    const isJointWithinLimits = (joint, newValue) => {
+        // Use the same joint limit checking as the main function
+        // If joint type is continuous or fixed, no limits
+        if (joint.jointType === 'continuous' || joint.jointType === 'fixed') {
+            return true;
+        }
         
-        // Get joint limits if they exist
-        const upperLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.upper : Infinity;
-        const lowerLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.lower : -Infinity;
+        // If joint has ignoreLimits flag, also return true
+        if (joint.ignoreLimits) {
+            return true;
+        }
         
-        return value >= lowerLimit && value <= upperLimit;
+        // For single DOF joints, check against upper/lower limits
+        if (!Array.isArray(newValue)) {
+            return newValue >= joint.limit.lower && newValue <= joint.limit.upper;
+        }
+        
+        // Multi-DOF joints would need more complex handling
+        return true;
     };
 
     // Function to highlight a button element
@@ -572,6 +583,8 @@ export function setupGamepadControls(robot) {
                     const joint = robot.joints[jointName];
                     const direction = buttonPlusPressed ? 1 : -1;
                     const newValue = joint.angle + (direction * stepSize);
+                    
+                    // Check joint limits and show alert if needed
                     if (isJointWithinLimits(joint, newValue)) {
                         joint.setJointValue(newValue);
                         hasInput = true;
