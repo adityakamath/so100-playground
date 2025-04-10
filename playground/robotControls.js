@@ -158,6 +158,93 @@ function isJointWithinLimits(joint, newValue) {
 }
 
 /**
+ * Common function to handle servo movement for both keyboard and gamepad controls
+ * @param {Object} joint - The joint object to control
+ * @param {string} jointName - Name of the joint
+ * @param {number} servoId - ID of the servo (1-6)
+ * @param {number} direction - Direction of movement (1 or -1)
+ * @param {number} stepSize - Step size for movement
+ * @param {number} newValue - New joint value
+ * @param {string} jointType - Type of joint for error messages
+ * @returns {Promise<boolean>} True if movement was successful
+ */
+async function handleServoMovement(joint, jointName, servoId, direction, stepSize, newValue, jointType) {
+    // Check if servo is in error state
+    if (isConnectedToRealRobot && servoCommStatus[servoId].status === 'error') {
+        console.warn(`Servo ${servoId} is in error state. Virtual movement prevented.`);
+        return false;
+    }
+
+    // Calculate servo step change
+    const stepChange = Math.round((direction * stepSize) * (4096 / (2 * Math.PI)));
+    let newPosition = (servoCurrentPositions[servoId] + stepChange) % 4096;
+
+    // Store previous position
+    const prevPosition = servoCurrentPositions[servoId];
+    servoCurrentPositions[servoId] = newPosition;
+
+    // Update servo status
+    servoCommStatus[servoId].status = 'pending';
+    updateServoStatusUI();
+
+    try {
+        // Control servo with queue system
+        const success = await writeServoPosition(servoId, newPosition);
+        if (success) {
+            joint.setJointValue(newValue);
+            servoLastSafePositions[servoId] = newPosition;
+            servoCommStatus[servoId].status = 'success';
+            updateServoStatusUI();
+            return true;
+        } else {
+            servoCurrentPositions[servoId] = prevPosition;
+            console.warn(`Failed to move servo ${servoId}. Virtual joint not updated.`);
+            showAlert('servo', `Servo ${servoId} movement failed!`);
+            
+            // Try to recover to last safe position
+            await recoverToSafePosition(servoId, prevPosition);
+            return false;
+        }
+    } catch (error) {
+        servoCurrentPositions[servoId] = prevPosition;
+        console.error(`Error controlling servo ${servoId}:`, error);
+        servoCommStatus[servoId].status = 'error';
+        servoCommStatus[servoId].lastError = error.message || 'Communication error';
+        updateServoStatusUI();
+        
+        showAlert('servo', `Servo ${servoId} error: ${error.message || 'Communication failed'}`);
+        
+        // Try to recover to last safe position
+        await recoverToSafePosition(servoId, prevPosition);
+        return false;
+    }
+}
+
+/**
+ * Attempt to recover servo to its last safe position
+ * @param {number} servoId - ID of the servo
+ * @param {number} prevPosition - Previous position before failed movement
+ */
+async function recoverToSafePosition(servoId, prevPosition) {
+    if (servoLastSafePositions[servoId] !== prevPosition) {
+        console.log(`Attempting to move servo ${servoId} back to last safe position...`);
+        try {
+            const recoverySuccess = await writeServoPosition(servoId, servoLastSafePositions[servoId], true);
+            if (recoverySuccess) {
+                console.log(`Successfully moved servo ${servoId} back to safe position.`);
+                servoCurrentPositions[servoId] = servoLastSafePositions[servoId];
+            } else {
+                console.error(`Failed to move servo ${servoId} back to safe position.`);
+                showAlert('servo', `Servo ${servoId} could not recover to safe position!`, 4000);
+            }
+        } catch (error) {
+            console.error(`Error moving servo ${servoId} back to safe position:`, error);
+            showAlert('servo', `Error recovering servo ${servoId}: ${error.message || 'Unknown error'}`, 4000);
+        }
+    }
+}
+
+/**
  * 设置键盘控制
  * @param {Object} robot - 要控制的机器人对象
  * @returns {Function} 用于在渲染循环中更新关节的函数
@@ -314,83 +401,23 @@ export function setupKeyboardControls(robot) {
               
               // 使用队列系统控制舵机，防止并发访问
               // 等待舵机移动结果，决定是否更新虚拟关节
-              writeServoPosition(servoId, newPosition)
-                .then(success => {
-                  // 如果舵机移动成功，更新最后成功位置并设置虚拟关节位置
-                  if (success) {
-                    // 更新虚拟关节
-                    robot.joints[jointName].setJointValue(newValue);
-                    // 更新最后安全位置
-                    servoLastSafePositions[servoId] = newPosition;
-
-                    // 更新舵机状态为成功
-                    servoCommStatus[servoId].status = 'success';
-                    updateServoStatusUI();
-                  } else {
-                    // 如果舵机移动失败，恢复当前位置记录
-                    servoCurrentPositions[servoId] = prevPosition;
-                    console.warn(`Failed to move servo ${servoId}. Virtual joint not updated.`);
-                    
-                    // 显示舵机错误提醒
-                    showAlert('servo', `Servo ${servoId} movement failed!`);
-                    
-                    // 尝试将舵机恢复到最后一个安全位置
-                    if (servoLastSafePositions[servoId] !== prevPosition) {
-                      console.log(`Attempting to move servo ${servoId} back to last safe position...`);
-                      writeServoPosition(servoId, servoLastSafePositions[servoId], true)
-                        .then(recoverySuccess => {
-                          if (recoverySuccess) {
-                            console.log(`Successfully moved servo ${servoId} back to safe position.`);
-                            servoCurrentPositions[servoId] = servoLastSafePositions[servoId];
-                          } else {
-                            console.error(`Failed to move servo ${servoId} back to safe position.`);
-                            // 显示舵机恢复错误提醒
-                            showAlert('servo', `Servo ${servoId} could not recover to safe position!`, 4000);
-                          }
-                        })
-                        .catch(error => {
-                          console.error(`Error moving servo ${servoId} back to safe position:`, error);
-                          // 显示舵机恢复错误提醒
-                          showAlert('servo', `Error recovering servo ${servoId}: ${error.message || 'Unknown error'}`, 4000);
-                        });
-                    }
-                  }
-                })
-                .catch(error => {
-                  // 舵机控制失败，不更新虚拟关节，恢复当前位置记录
-                  servoCurrentPositions[servoId] = prevPosition;
-                  console.error(`Error controlling servo ${servoId}:`, error);
-                  servoCommStatus[servoId].status = 'error';
-                  servoCommStatus[servoId].lastError = error.message || 'Communication error';
-                  updateServoStatusUI();
-                  
-                  // 显示舵机错误提醒
-                  showAlert('servo', `Servo ${servoId} error: ${error.message || 'Communication failed'}`);
-                  
-                  // 尝试将舵机恢复到最后一个安全位置
-                  if (servoLastSafePositions[servoId] !== prevPosition) {
-                    console.log(`Attempting to move servo ${servoId} back to last safe position...`);
-                    writeServoPosition(servoId, servoLastSafePositions[servoId], true)
-                      .then(recoverySuccess => {
-                        if (recoverySuccess) {
-                          console.log(`Successfully moved servo ${servoId} back to safe position.`);
-                          servoCurrentPositions[servoId] = servoLastSafePositions[servoId];
-                        } else {
-                          console.error(`Failed to move servo ${servoId} back to safe position.`);
-                          // 显示舵机恢复错误提醒
-                          showAlert('servo', `Servo ${servoId} could not recover to safe position!`, 4000);
-                        }
-                      })
-                      .catch(error => {
-                        console.error(`Error moving servo ${servoId} back to safe position:`, error);
-                        // 显示舵机恢复错误提醒
-                        showAlert('servo', `Error recovering servo ${servoId}: ${error.message || 'Unknown error'}`, 4000);
-                      });
-                  }
-                });
+              const success = handleServoMovement(
+                robot.joints[jointName],
+                jointName,
+                servoId,
+                direction,
+                stepSize,
+                newValue,
+                jointName
+              );
+              if (success) {
+                // Movement successful
+                keyPressed = true;
+              }
             } else {
               // 如果没有连接真实机器人，直接更新虚拟关节
               robot.joints[jointName].setJointValue(newValue);
+              keyPressed = true;
             }
           }
         }
@@ -566,88 +593,18 @@ export function setupGamepadControls(robot) {
                     if (isJointWithinLimits(joint, newValue)) {
                         // If connected to real robot, control the servo
                         if (isConnectedToRealRobot) {
-                            const servoId = mapping.jointIndex + 1;
-                            
-                            // Check if servo is in error state
-                            if (servoCommStatus[servoId].status === 'error') {
-                                console.warn(`Servo ${servoId} is in error state. Virtual movement prevented.`);
-                                return;
+                            const success = handleServoMovement(
+                                joint,
+                                jointName,
+                                mapping.jointIndex + 1,
+                                direction,
+                                stepSize,
+                                newValue,
+                                jointType
+                            );
+                            if (success) {
+                                hasInput = true;
                             }
-                            
-                            // Calculate servo step change
-                            const stepChange = Math.round((direction * stepSize) * (4096 / (2 * Math.PI)));
-                            let newPosition = (servoCurrentPositions[servoId] + stepChange) % 4096;
-                            
-                            // Store previous position
-                            const prevPosition = servoCurrentPositions[servoId];
-                            servoCurrentPositions[servoId] = newPosition;
-                            
-                            // Update servo status
-                            servoCommStatus[servoId].status = 'pending';
-                            updateServoStatusUI();
-                            
-                            // Control servo with queue system
-                            writeServoPosition(servoId, newPosition)
-                                .then(success => {
-                                    if (success) {
-                                        joint.setJointValue(newValue);
-                                        servoLastSafePositions[servoId] = newPosition;
-                                        servoCommStatus[servoId].status = 'success';
-                                        updateServoStatusUI();
-                                        hasInput = true;
-                                    } else {
-                                        servoCurrentPositions[servoId] = prevPosition;
-                                        console.warn(`Failed to move servo ${servoId}. Virtual joint not updated.`);
-                                        showAlert('servo', `Servo ${servoId} movement failed!`);
-                                        
-                                        // Try to recover to last safe position
-                                        if (servoLastSafePositions[servoId] !== prevPosition) {
-                                            console.log(`Attempting to move servo ${servoId} back to last safe position...`);
-                                            writeServoPosition(servoId, servoLastSafePositions[servoId], true)
-                                                .then(recoverySuccess => {
-                                                    if (recoverySuccess) {
-                                                        console.log(`Successfully moved servo ${servoId} back to safe position.`);
-                                                        servoCurrentPositions[servoId] = servoLastSafePositions[servoId];
-                                                    } else {
-                                                        console.error(`Failed to move servo ${servoId} back to safe position.`);
-                                                        showAlert('servo', `Servo ${servoId} could not recover to safe position!`, 4000);
-                                                    }
-                                                })
-                                                .catch(error => {
-                                                    console.error(`Error moving servo ${servoId} back to safe position:`, error);
-                                                    showAlert('servo', `Error recovering servo ${servoId}: ${error.message || 'Unknown error'}`, 4000);
-                                                });
-                                        }
-                                    }
-                                })
-                                .catch(error => {
-                                    servoCurrentPositions[servoId] = prevPosition;
-                                    console.error(`Error controlling servo ${servoId}:`, error);
-                                    servoCommStatus[servoId].status = 'error';
-                                    servoCommStatus[servoId].lastError = error.message || 'Communication error';
-                                    updateServoStatusUI();
-                                    
-                                    showAlert('servo', `Servo ${servoId} error: ${error.message || 'Communication failed'}`);
-                                    
-                                    // Try to recover to last safe position
-                                    if (servoLastSafePositions[servoId] !== prevPosition) {
-                                        console.log(`Attempting to move servo ${servoId} back to last safe position...`);
-                                        writeServoPosition(servoId, servoLastSafePositions[servoId], true)
-                                            .then(recoverySuccess => {
-                                                if (recoverySuccess) {
-                                                    console.log(`Successfully moved servo ${servoId} back to safe position.`);
-                                                    servoCurrentPositions[servoId] = servoLastSafePositions[servoId];
-                                                } else {
-                                                    console.error(`Failed to move servo ${servoId} back to safe position.`);
-                                                    showAlert('servo', `Servo ${servoId} could not recover to safe position!`, 4000);
-                                                }
-                                            })
-                                            .catch(error => {
-                                                console.error(`Error moving servo ${servoId} back to safe position:`, error);
-                                                showAlert('servo', `Error recovering servo ${servoId}: ${error.message || 'Unknown error'}`, 4000);
-                                            });
-                                    }
-                                });
                         } else {
                             // If not connected to real robot, just update virtual joint
                             joint.setJointValue(newValue);
