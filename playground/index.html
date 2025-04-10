@@ -494,6 +494,40 @@
             #gamepadControlSection.collapsible {
                 overflow: visible; /* Allow tooltip to overflow */
             }
+
+            /* Gamepad type selector styles */
+            .gamepad-type-selector {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-top: 10px;
+                margin-bottom: 15px;
+            }
+
+            .gamepad-type-selector label {
+                color: white;
+                font-size: 14px;
+                min-width: 100px;
+            }
+
+            .gamepad-type-selector select {
+                flex: 1;
+                padding: 6px;
+                border-radius: 4px;
+                background: rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                color: white;
+                cursor: pointer;
+            }
+
+            .gamepad-type-selector select:hover {
+                background: rgba(255, 255, 255, 0.25);
+            }
+
+            .gamepad-type-selector select option {
+                background: #333;
+                color: white;
+            }
         </style>
     </head>
     <body>
@@ -574,11 +608,21 @@
                                 <div class="tooltip">
                                     <strong>Before connecting:</strong>
                                     <ul>
-                                        <li>Connect gamepad via USB/Bluetooth</li>
-                                        <li>Press any button to activate</li>
+                                        <li>Ensure the gamepad is connected to the computer via USB or Bluetooth</li>
+                                        <li>Press any button on the gamepad to activate</li>
+                                        <li>Select the gamepad type to get the correct mapping</li>
                                     </ul>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="gamepad-type-selector">
+                            <label for="gamepadType">Gamepad Type:</label>
+                            <select id="gamepadType">
+                                <option value="playstation" selected>PlayStation</option>
+                                <option value="nintendo">Nintendo</option>
+                                <option value="xbox">Xbox</option>
+                            </select>
                         </div>
 
                         <div class="control-info" style="margin-top: 15px;">
