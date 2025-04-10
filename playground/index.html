@@ -475,13 +475,24 @@
             /* Specific positioning for gamepad controls tooltip */
             #gamepadControlSection .tooltip {
                 top: auto;
-                bottom: 40px;
-                right: -10px;
+                bottom: 100%;
+                right: 0;
+                margin-bottom: 10px;
+                z-index: 1003; /* Ensure it's above other elements */
             }
 
             /* Ensure the gamepad section's help icon is properly positioned */
             #gamepadControlSection .help-wrapper {
                 position: relative;
+                overflow: visible; /* Ensure tooltip is not cut off */
+            }
+
+            #gamepadControlSection .collapsible-content {
+                overflow: visible; /* Allow tooltip to overflow */
+            }
+
+            #gamepadControlSection.collapsible {
+                overflow: visible; /* Allow tooltip to overflow */
             }
         </style>
     </head>
