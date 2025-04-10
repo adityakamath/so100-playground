@@ -411,6 +411,181 @@ export function setupKeyboardControls(robot) {
 }
 
 /**
+ * Setup gamepad controls for the robot
+ * @param {Object} robot - The robot object to control
+ * @returns {Function} Function to update joints based on gamepad input
+ */
+export function setupGamepadControls(robot) {
+    let gamepad = null;
+    let isGamepadConnected = false;
+    const gamepadControlSection = document.getElementById('gamepadControlSection');
+    const connectButton = document.getElementById('connectGamepad');
+    let gamepadActiveTimeout;
+
+    // Get initial stepSize from the HTML slider
+    const speedControl = document.getElementById('speedControl');
+    let stepSize = speedControl ? MathUtils.degToRad(parseFloat(speedControl.value)) : MathUtils.degToRad(0.2);
+
+    // Update stepSize when speed control changes
+    if (speedControl) {
+        speedControl.addEventListener('input', (e) => {
+            stepSize = MathUtils.degToRad(parseFloat(e.target.value));
+        });
+    }
+
+    // Gamepad button mappings for robot joints
+    const gamepadMappings = {
+        // Right stick X-axis (axis[2]) - Rotation
+        rotation: { jointIndex: 0, axis: 2 },
+        // Right stick Y-axis (axis[3]) - Pitch
+        pitch: { jointIndex: 1, axis: 3 },
+        // Left stick Y-axis (axis[1]) - Elbow
+        elbow: { jointIndex: 2, axis: 1 },
+        // D-pad up/down - Wrist Pitch
+        wristPitch: { jointIndex: 3, buttons: [12, 13] }, // Up: 12, Down: 13
+        // D-pad left/right - Wrist Roll
+        wristRoll: { jointIndex: 4, buttons: [14, 15] }, // Left: 14, Right: 15
+        // Triggers (L2/R2) - Jaw
+        jaw: { jointIndex: 5, buttons: [6, 7] } // L2: 6, R2: 7
+    };
+
+    // Function to set the gamepad section as active
+    const setGamepadSectionActive = () => {
+        if (gamepadControlSection) {
+            gamepadControlSection.classList.add('control-active');
+            
+            // Clear existing timeout if any
+            if (gamepadActiveTimeout) {
+                clearTimeout(gamepadActiveTimeout);
+            }
+            
+            // Set new timeout
+            gamepadActiveTimeout = setTimeout(() => {
+                gamepadControlSection.classList.remove('control-active');
+            }, 200);
+        }
+    };
+
+    // Function to handle gamepad connection
+    const connectGamepad = () => {
+        const gamepads = navigator.getGamepads();
+        for (const gp of gamepads) {
+            if (gp && !gamepad) {
+                gamepad = gp;
+                isGamepadConnected = true;
+                connectButton.textContent = 'Gamepad Connected';
+                connectButton.classList.add('connected');
+                break;
+            }
+        }
+    };
+
+    // Function to handle gamepad disconnection
+    const disconnectGamepad = () => {
+        gamepad = null;
+        isGamepadConnected = false;
+        connectButton.textContent = 'Connect Gamepad';
+        connectButton.classList.remove('connected');
+    };
+
+    // Add event listeners for gamepad connection/disconnection
+    window.addEventListener('gamepadconnected', (e) => {
+        console.log('Gamepad connected:', e.gamepad);
+        if (!isGamepadConnected) {
+            connectGamepad();
+        }
+    });
+
+    window.addEventListener('gamepaddisconnected', (e) => {
+        console.log('Gamepad disconnected:', e.gamepad);
+        disconnectGamepad();
+    });
+
+    // Add click handler for connect button
+    if (connectButton) {
+        connectButton.addEventListener('click', () => {
+            if (!isGamepadConnected) {
+                connectGamepad();
+            } else {
+                disconnectGamepad();
+            }
+        });
+    }
+
+    // Function to update joints based on gamepad input
+    function updateJoints() {
+        if (!isGamepadConnected || !gamepad) {
+            return;
+        }
+
+        // Update gamepad state
+        gamepad = navigator.getGamepads()[gamepad.index];
+        if (!gamepad) {
+            return;
+        }
+
+        let hasInput = false;
+
+        // Handle analog stick inputs
+        const handleAxisInput = (mapping, deadzone = 0.1) => {
+            const value = gamepad.axes[mapping.axis];
+            if (Math.abs(value) > deadzone) {
+                const joint = robot.joints[jointNames[mapping.jointIndex]];
+                if (joint) {
+                    const newValue = joint.jointValue + (value * stepSize);
+                    if (isJointWithinLimits(joint, newValue)) {
+                        joint.jointValue = newValue;
+                        if (isConnectedToRealRobot) {
+                            const servoId = mapping.jointIndex + 1;
+                            writeServoPosition(servoId, joint.jointValue);
+                        }
+                        hasInput = true;
+                    } else {
+                        showAlert('joint', `Joint ${jointNames[mapping.jointIndex]} at limit`);
+                    }
+                }
+            }
+        };
+
+        // Handle button inputs
+        const handleButtonPair = (mapping) => {
+            const [buttonPlus, buttonMinus] = mapping.buttons;
+            if (gamepad.buttons[buttonPlus].pressed || gamepad.buttons[buttonMinus].pressed) {
+                const joint = robot.joints[jointNames[mapping.jointIndex]];
+                if (joint) {
+                    const direction = gamepad.buttons[buttonPlus].pressed ? 1 : -1;
+                    const newValue = joint.jointValue + (direction * stepSize);
+                    if (isJointWithinLimits(joint, newValue)) {
+                        joint.jointValue = newValue;
+                        if (isConnectedToRealRobot) {
+                            const servoId = mapping.jointIndex + 1;
+                            writeServoPosition(servoId, joint.jointValue);
+                        }
+                        hasInput = true;
+                    } else {
+                        showAlert('joint', `Joint ${jointNames[mapping.jointIndex]} at limit`);
+                    }
+                }
+            }
+        };
+
+        // Process all mappings
+        handleAxisInput(gamepadMappings.rotation);
+        handleAxisInput(gamepadMappings.pitch);
+        handleAxisInput(gamepadMappings.elbow);
+        handleButtonPair(gamepadMappings.wristPitch);
+        handleButtonPair(gamepadMappings.wristRoll);
+        handleButtonPair(gamepadMappings.jaw);
+
+        if (hasInput) {
+            setGamepadSectionActive();
+        }
+    }
+
+    return updateJoints;
+}
+
+/**
  * 设置控制面板UI
  */
 export function setupControlPanel() {

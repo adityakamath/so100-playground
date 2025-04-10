@@ -527,6 +527,57 @@
                 </div>
 
                 <br>
+                <!-- Gamepad Controls -->
+                <div class="collapsible" id="gamepadControlSection">
+                    <div class="collapsible-header">
+                        <span>Gamepad Controls</span>
+                        <span class="collapsible-icon">▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="help-wrapper">
+                            <button id="connectGamepad" class="connect-button">Connect Gamepad</button>
+                            <div class="help-icon">?
+                                <div class="tooltip">
+                                    <strong>Before connecting:</strong>
+                                    <ul>
+                                        <li>Make sure your gamepad is turned on</li>
+                                        <li>Press any button on the gamepad to activate it</li>
+                                        <li>Click "Connect Gamepad" to start using it</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-info" style="margin-top: 15px;">
+                            <div class="joint-control">
+                                <div class="joint-name">Rotation:</div>
+                                <div class="joint-keys">Right Stick X-axis</div>
+                            </div>
+                            <div class="joint-control">
+                                <div class="joint-name">Pitch:</div>
+                                <div class="joint-keys">Right Stick Y-axis</div>
+                            </div>
+                            <div class="joint-control">
+                                <div class="joint-name">Elbow:</div>
+                                <div class="joint-keys">Left Stick Y-axis</div>
+                            </div>
+                            <div class="joint-control">
+                                <div class="joint-name">Wrist Pitch:</div>
+                                <div class="joint-keys">D-pad Up/Down</div>
+                            </div>
+                            <div class="joint-control">
+                                <div class="joint-name">Wrist Roll:</div>
+                                <div class="joint-keys">D-pad Left/Right</div>
+                            </div>
+                            <div class="joint-control">
+                                <div class="joint-name">Jaw:</div>
+                                <div class="joint-keys">L2/R2 Triggers</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <br>
                 <!-- Servo Status Section (initially hidden) -->
                 <div class="collapsible" id="servoStatusContainer" style="display: none;">
                     <div class="collapsible-header">
