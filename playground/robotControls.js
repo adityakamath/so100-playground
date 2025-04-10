@@ -519,6 +519,17 @@ export function setupGamepadControls(robot) {
         });
     }
 
+    // Function to check if a joint value is within its limits
+    const isJointWithinLimits = (joint, value) => {
+        if (!joint || !joint.jointType || joint.jointType === 'fixed') return false;
+        
+        // Get joint limits if they exist
+        const upperLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.upper : Infinity;
+        const lowerLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.lower : -Infinity;
+        
+        return value >= lowerLimit && value <= upperLimit;
+    };
+
     // Function to highlight a button element
     const highlightButton = (buttonId, isPressed) => {
         const buttonElement = document.querySelector(`.key[data-key="${buttonId}"]`);
