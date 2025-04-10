@@ -122,6 +122,14 @@
                 display: inline-flex;
                 justify-content: center;
                 align-items: center;
+                transition: all 0.2s ease;
+            }
+            
+            .key-pressed {
+                background: rgba(255, 255, 255, 0.6);
+                color: #000;
+                box-shadow: 0 0 8px rgba(76, 175, 80, 0.8);
+                transform: translateY(1px);
             }
             
             .direction-plus {
@@ -554,27 +562,27 @@
                         <div class="control-info" style="margin-top: 15px;">
                             <div class="joint-control">
                                 <div class="joint-name">Rotation:</div>
-                                <div class="joint-keys"><span class="key" data-key="triangle">△|Y</span> <span class="direction-plus">+</span> <span class="key" data-key="square">□|X</span> <span class="direction-minus">-</span></div>
+                                <div class="joint-keys"><span class="key" data-key="rotationPlus">Face Right</span> <span class="direction-plus">+</span> <span class="key" data-key="rotationMinus">Face Left</span> <span class="direction-minus">-</span></div>
                             </div>
                             <div class="joint-control">
                                 <div class="joint-name">Pitch:</div>
-                                <div class="joint-keys"><span class="key" data-key="circle">○|B</span> <span class="direction-plus">+</span> <span class="key" data-key="cross">×|A</span> <span class="direction-minus">-</span></div>
+                                <div class="joint-keys"><span class="key" data-key="pitchPlus">Face Top</span> <span class="direction-plus">+</span> <span class="key" data-key="pitchMinus">Face Bottom</span> <span class="direction-minus">-</span></div>
                             </div>
                             <div class="joint-control">
                                 <div class="joint-name">Elbow:</div>
-                                <div class="joint-keys"><span class="key" data-key="r1">R1</span> <span class="direction-plus">+</span> <span class="key" data-key="l1">L1</span> <span class="direction-minus">-</span></div>
+                                <div class="joint-keys"><span class="key" data-key="elbowPlus">R1</span> <span class="direction-plus">+</span> <span class="key" data-key="elbowMinus">L1</span> <span class="direction-minus">-</span></div>
                             </div>
                             <div class="joint-control">
                                 <div class="joint-name">Wrist Pitch:</div>
-                                <div class="joint-keys"><span class="key" data-key="up">↑</span> <span class="direction-plus">+</span> <span class="key" data-key="down">↓</span> <span class="direction-minus">-</span></div>
+                                <div class="joint-keys"><span class="key" data-key="wristPitchPlus">D-Up</span> <span class="direction-plus">+</span> <span class="key" data-key="wristPitchMinus">D-Down</span> <span class="direction-minus">-</span></div>
                             </div>
                             <div class="joint-control">
                                 <div class="joint-name">Wrist Roll:</div>
-                                <div class="joint-keys"><span class="key" data-key="right">→</span> <span class="direction-plus">+</span> <span class="key" data-key="left">←</span> <span class="direction-minus">-</span></div>
+                                <div class="joint-keys"><span class="key" data-key="wristRollPlus">D-Right</span> <span class="direction-plus">+</span> <span class="key" data-key="wristRollMinus">D-Left</span> <span class="direction-minus">-</span></div>
                             </div>
                             <div class="joint-control">
                                 <div class="joint-name">Jaw:</div>
-                                <div class="joint-keys"><span class="key" data-key="r2">R2</span> <span class="direction-plus">+</span> <span class="key" data-key="l2">L2</span> <span class="direction-minus">-</span></div>
+                                <div class="joint-keys"><span class="key" data-key="jawPlus">R2</span> <span class="direction-plus">+</span> <span class="key" data-key="jawMinus">L2</span> <span class="direction-minus">-</span></div>
                             </div>
                         </div>
                     </div>
