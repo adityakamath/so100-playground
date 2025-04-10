@@ -447,13 +447,13 @@ export function setupGamepadControls(robot) {
         // Cross/A and Circle/B - Pitch
         pitch: { jointIndex: 1, buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
         // L1/LB and R1/RB - Elbow
-        elbow: { jointIndex: 2, buttons: [4, 5], labels: ['elbowPlus', 'elbowMinus'] }, // L1/LB: 4, R1/RB: 5
+        elbow: { jointIndex: 2, buttons: [4, 5], labels: ['elbowPlus', 'elbowMinus'] }, // L1: 4, R1: 5
         // D-pad up/down - Wrist Pitch
         wristPitch: { jointIndex: 3, buttons: [12, 13], labels: ['wristPitchPlus', 'wristPitchMinus'] }, // Up: 12, Down: 13
         // D-pad left/right - Wrist Roll
-        wristRoll: { jointIndex: 4, buttons: [15, 14], labels: ['wristRollPlus', 'wristRollMinus'] }, // Right: 15, Left: 14
+        wristRoll: { jointIndex: 4, buttons: [14, 15], labels: ['wristRollPlus', 'wristRollMinus'] }, // Left: 14, Right: 15
         // L2/LT and R2/RT - Jaw
-        jaw: { jointIndex: 5, buttons: [6, 7], labels: ['jawPlus', 'jawMinus'] } // L2/LT: 6, R2/RT: 7
+        jaw: { jointIndex: 5, buttons: [6, 7], labels: ['jawPlus', 'jawMinus'] } // L2: 6, R2: 7
     };
 
     // Function to set the gamepad section as active
@@ -1193,14 +1193,14 @@ function updateServoStatusUI() {
 
 function updateGamepadLabels() {
     const commonLabels = {
-        elbowPlus: 'R1',
-        elbowMinus: 'L1',
+        elbowPlus: 'L1',
+        elbowMinus: 'R1',
         wristPitchPlus: '↑',
         wristPitchMinus: '↓',
         wristRollPlus: '←',
         wristRollMinus: '→',
-        jawPlus: 'R2',
-        jawMinus: 'L2'
+        jawPlus: 'L2',
+        jawMinus: 'R2'
     };
 
     const buttonLabels = {
