@@ -112,25 +112,6 @@
                 gap: 4px;
             }
             
-            .button {
-                background: rgba(255, 255, 255, 0.2);
-                padding: 4px 12px;
-                border-radius: 4px;
-                font-family: monospace;
-                min-width: 20px;
-                text-align: center;
-                display: inline-flex;
-                justify-content: center;
-                align-items: center;
-                margin: 0 2px;
-                transition: all 0.2s ease;
-            }
-
-            .button.pressed {
-                background: rgba(76, 175, 80, 0.4);
-                box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
-            }
-
             .key {
                 background: rgba(255, 255, 255, 0.2);
                 padding: 4px 8px;
@@ -141,12 +122,6 @@
                 display: inline-flex;
                 justify-content: center;
                 align-items: center;
-                transition: all 0.2s ease;
-            }
-
-            .key.pressed {
-                background: rgba(76, 175, 80, 0.4);
-                box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
             }
             
             .direction-plus {
@@ -344,7 +319,9 @@
             
             /* Active control section */
             .control-active {
-                display: none;
+                box-shadow: 0 0 8px rgba(76, 175, 80, 0.8);
+                /* border: 1px solid rgba(76, 175, 80, 0.6); */
+                /* background: rgba(255, 255, 255, 0.1); */
             }
             
             /* Global Controls Section */
