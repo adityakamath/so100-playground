@@ -60,6 +60,32 @@ let isProcessingQueue = false;
 
 let currentGamepadType = 'ps'; // Default to PlayStation layout
 
+// Joint name mapping for consistent alerts
+const jointDisplayNames = {
+    'Base_Rotation': 'Base Rotation',
+    'Shoulder_Pitch': 'Shoulder Pitch',
+    'Elbow': 'Elbow',
+    'Wrist_Pitch': 'Wrist Pitch',
+    'Wrist_Roll': 'Wrist Roll',
+    'Jaw': 'Jaw',
+    // Mapping for gamepad control types to match URDF joint names
+    'rotation': 'Base Rotation',
+    'pitch': 'Shoulder Pitch',
+    'elbow': 'Elbow',
+    'wristPitch': 'Wrist Pitch',
+    'wristRoll': 'Wrist Roll',
+    'jaw': 'Jaw'
+};
+
+/**
+ * Get consistent display name for a joint
+ * @param {string} jointName - Original joint name from either URDF or control mapping
+ * @returns {string} Consistent display name for alerts
+ */
+function getJointDisplayName(jointName) {
+    return jointDisplayNames[jointName] || jointName;
+}
+
 /**
  * 显示警告提醒
  * @param {string} type - 提醒类型 ('joint' 虚拟关节限位, 'servo' 真实舵机错误)
@@ -241,7 +267,7 @@ async function recoverToSafePosition(servoId, prevPosition) {
             console.error(`Error moving servo ${servoId} back to safe position:`, error);
             showAlert('servo', `Error recovering servo ${servoId}: ${error.message || 'Unknown error'}`, 4000);
         }
-    }
+  }
 }
 
 /**
@@ -370,7 +396,7 @@ export function setupKeyboardControls(robot) {
             if (!isJointWithinLimits(robot.joints[jointName], newValue)) {
               console.warn(`Joint ${jointName} would exceed its limits. Movement prevented.`);
               // 显示虚拟关节限位提醒
-              showAlert('joint', `Joint ${jointName} has reached its limit!`);
+              showAlert('joint', `Joint ${getJointDisplayName(jointName)} has reached its limit!`);
               return; // 跳过这个关节的更新
             }
             
@@ -408,15 +434,15 @@ export function setupKeyboardControls(robot) {
                 direction,
                 stepSize,
                 newValue,
-                jointName
+                getJointDisplayName(jointName)
               );
-              if (success) {
+                  if (success) {
                 // Movement successful
                 keyPressed = true;
               }
             } else {
               // 如果没有连接真实机器人，直接更新虚拟关节
-              robot.joints[jointName].setJointValue(newValue);
+                    robot.joints[jointName].setJointValue(newValue);
               keyPressed = true;
             }
           }
@@ -600,7 +626,7 @@ export function setupGamepadControls(robot) {
                                 direction,
                                 stepSize,
                                 newValue,
-                                jointType
+                                getJointDisplayName(jointType)
                             );
                             if (success) {
                                 hasInput = true;
@@ -611,7 +637,7 @@ export function setupGamepadControls(robot) {
                             hasInput = true;
                         }
                     } else {
-                        showAlert('joint', `Joint ${jointType} has reached its limit!`);
+                        showAlert('joint', `Joint ${getJointDisplayName(jointType)} has reached its limit!`);
                     }
                 }
             }
@@ -627,11 +653,11 @@ export function setupGamepadControls(robot) {
 
         if (hasInput) {
             setGamepadSectionActive();
-            robot.updateMatrixWorld(true);
-        }
+      robot.updateMatrixWorld(true);
     }
+  }
 
-    return updateJoints;
+  return updateJoints;
 }
 
 /**
