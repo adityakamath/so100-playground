@@ -1194,59 +1194,56 @@ function updateServoStatusUI() {
 function updateGamepadLabels() {
     const buttonLabels = {
         ps: {
-            0: 'X',
-            1: 'Circle',
-            2: 'Square',
-            3: 'Triangle',
-            4: 'L1',
-            5: 'R1',
-            6: 'L2',
-            7: 'R2',
-            12: 'D-Up',
-            13: 'D-Down',
-            14: 'D-Left',
-            15: 'D-Right'
+            rotationPlus: 'Square',
+            rotationMinus: 'Circle',
+            pitchPlus: 'Triangle',
+            pitchMinus: 'X',
+            elbowPlus: 'R1',
+            elbowMinus: 'L1',
+            wristPitchPlus: '↑',
+            wristPitchMinus: '↓',
+            wristRollPlus: '←',
+            wristRollMinus: '→',
+            jawPlus: 'R2',
+            jawMinus: 'L2'
         },
         nintendo: {
-            0: 'B',
-            1: 'A',
-            2: 'Y',
-            3: 'X',
-            4: 'L',
-            5: 'R',
-            6: 'ZL',
-            7: 'ZR',
-            12: 'D-Up',
-            13: 'D-Down',
-            14: 'D-Left',
-            15: 'D-Right'
+            rotationPlus: 'Y',
+            rotationMinus: 'A',
+            pitchPlus: 'X',
+            pitchMinus: 'B',
+            elbowPlus: 'R',
+            elbowMinus: 'L',
+            wristPitchPlus: '↑',
+            wristPitchMinus: '↓',
+            wristRollPlus: '←',
+            wristRollMinus: '→',
+            jawPlus: 'ZR',
+            jawMinus: 'ZL'
         },
         xbox: {
-            0: 'A',
-            1: 'B',
-            2: 'X',
-            3: 'Y',
-            4: 'LB',
-            5: 'RB',
-            6: 'LT',
-            7: 'RT',
-            12: 'D-Up',
-            13: 'D-Down',
-            14: 'D-Left',
-            15: 'D-Right'
+            rotationPlus: 'X',
+            rotationMinus: 'B',
+            pitchPlus: 'Y',
+            pitchMinus: 'A',
+            elbowPlus: 'RB',
+            elbowMinus: 'LB',
+            wristPitchPlus: '↑',
+            wristPitchMinus: '↓',
+            wristRollPlus: '←',
+            wristRollMinus: '→',
+            jawPlus: 'RT',
+            jawMinus: 'LT'
         }
     };
 
     // Update all button labels in the UI
-    const selects = document.querySelectorAll('select[data-mapping-type]');
-    selects.forEach(select => {
-        const options = select.querySelectorAll('option');
-        options.forEach(option => {
-            const buttonId = option.value;
-            if (buttonLabels[currentGamepadType][buttonId]) {
-                option.textContent = buttonLabels[currentGamepadType][buttonId];
-            }
-        });
+    const buttonElements = document.querySelectorAll('.key[data-key]');
+    buttonElements.forEach(button => {
+        const buttonKey = button.getAttribute('data-key');
+        if (buttonLabels[currentGamepadType][buttonKey]) {
+            button.textContent = buttonLabels[currentGamepadType][buttonKey];
+        }
     });
 }
 
