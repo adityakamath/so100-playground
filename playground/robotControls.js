@@ -216,6 +216,9 @@ export function setupKeyboardControls(robot) {
     const keyElement = document.querySelector(`.key[data-key="${key}"]`);
     if (keyElement) {
       keyElement.classList.add('key-pressed');
+      
+      // Highlight the keyboard control section
+      setKeyboardSectionActive();
     }
   });
 
@@ -438,17 +441,17 @@ export function setupGamepadControls(robot) {
     // Gamepad button mappings for robot joints
     const gamepadMappings = {
         // Square/X and Triangle/Y - Rotation
-        rotation: { jointIndex: 0, buttons: [0, 3], labels: ['rotationPlus', 'rotationMinus'] }, // Square/X: 0, Triangle/Y: 3
+        rotation: { jointIndex: 0, buttons: [2, 1] }, // Face-Left: 0, Face-Right: 3
         // Cross/A and Circle/B - Pitch
-        pitch: { jointIndex: 1, buttons: [1, 2], labels: ['pitchPlus', 'pitchMinus'] }, // Cross/A: 1, Circle/B: 2
+        pitch: { jointIndex: 1, buttons: [3, 0] }, // Face-Top: 1, Face-Bottom: 2
         // L1/LB and R1/RB - Elbow
-        elbow: { jointIndex: 2, buttons: [4, 5], labels: ['elbowPlus', 'elbowMinus'] }, // L1/LB: 4, R1/RB: 5
+        elbow: { jointIndex: 2, buttons: [4, 5] }, // L1/LB: 4, R1/RB: 5
         // D-pad up/down - Wrist Pitch
-        wristPitch: { jointIndex: 3, buttons: [12, 13], labels: ['wristPitchPlus', 'wristPitchMinus'] }, // Up: 12, Down: 13
+        wristPitch: { jointIndex: 3, buttons: [12, 13] }, // DPad-Up: 12, DPad-Down: 13
         // D-pad left/right - Wrist Roll
-        wristRoll: { jointIndex: 4, buttons: [14, 15], labels: ['wristRollPlus', 'wristRollMinus'] }, // Left: 14, Right: 15
+        wristRoll: { jointIndex: 4, buttons: [14, 15] }, // DPad-Left: 14, DPad-Right: 15
         // L2/LT and R2/RT - Jaw
-        jaw: { jointIndex: 5, buttons: [6, 7], labels: ['jawPlus', 'jawMinus'] } // L2/LT: 6, R2/RT: 7
+        jaw: { jointIndex: 5, buttons: [6, 7] } // L2/LT: 6, R2/RT: 7
     };
 
     // Function to set the gamepad section as active
@@ -514,14 +517,25 @@ export function setupGamepadControls(robot) {
         });
     }
 
+    // Function to check if a joint value is within its limits
+    const isJointWithinLimits = (joint, value) => {
+        if (!joint || !joint.jointType || joint.jointType === 'fixed') return false;
+        
+        // Get joint limits if they exist
+        const upperLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.upper : Infinity;
+        const lowerLimit = joint.urdf && joint.urdf.limits ? joint.urdf.limits.lower : -Infinity;
+        
+        return value >= lowerLimit && value <= upperLimit;
+    };
+
     // Function to highlight a button element
     const highlightButton = (buttonId, isPressed) => {
-        const buttonElement = document.querySelector(`.key[data-key="${buttonId}"]`);
+        const buttonElement = document.getElementById(buttonId);
         if (buttonElement) {
             if (isPressed) {
-                buttonElement.classList.add('key-pressed');
+                buttonElement.classList.add('pressed');
             } else {
-                buttonElement.classList.remove('key-pressed');
+                buttonElement.classList.remove('pressed');
             }
         }
     };
@@ -547,8 +561,8 @@ export function setupGamepadControls(robot) {
             const buttonMinusPressed = gamepad.buttons[buttonMinus].pressed;
 
             // Highlight buttons based on press state
-            highlightButton(mapping.labels[0], buttonPlusPressed);
-            highlightButton(mapping.labels[1], buttonMinusPressed);
+            highlightButton(`${jointType}Plus`, buttonPlusPressed);
+            highlightButton(`${jointType}Minus`, buttonMinusPressed);
 
             if (buttonPlusPressed || buttonMinusPressed) {
                 const jointName = jointNames[mapping.jointIndex];
@@ -573,6 +587,7 @@ export function setupGamepadControls(robot) {
         handleButtonPair(gamepadMappings.jaw, 'jaw');
 
         if (hasInput) {
+            setGamepadSectionActive();
             robot.updateMatrixWorld(true);
         }
     }
