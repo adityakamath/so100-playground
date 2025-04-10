@@ -382,26 +382,26 @@
                 position: absolute;
                 top: -90px;
                 right: 0;
-                background: rgba(0, 0, 0, 0.9);
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                background: rgb(0, 0, 0);
                 color: white;
                 border-radius: 4px;
-                padding: 10px;
-                width: 250px;
-                font-size: 12px;
+                padding: 15px;
+                width: 300px;
+                font-size: 14px;
                 z-index: 1002;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
                 opacity: 0;
                 transition: opacity 0.3s;
             }
             
             .tooltip ul {
-                margin: 5px 0;
+                margin: 10px 0 0 0;
                 padding-left: 20px;
             }
             
             .tooltip li {
-                margin-bottom: 5px;
+                margin-bottom: 8px;
+                line-height: 1.4;
             }
             
             .help-icon:hover .tooltip,
@@ -549,10 +549,11 @@
                             <button id="connectGamepad" class="connect-button">Connect Gamepad</button>
                             <div class="help-icon">?
                                 <div class="tooltip">
-                                    <strong>Before connecting:</strong>
+                                    Before connecting:
                                     <ul>
-                                        <li>Connect gamepad via USB/Bluetooth</li>
+                                        <li>Select the correct device when prompted</li>
                                         <li>Press any button to activate</li>
+                                        <li>Click "Connect Gamepad" to start</li>
                                     </ul>
                                 </div>
                             </div>
