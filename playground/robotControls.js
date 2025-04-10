@@ -201,10 +201,10 @@ export function setupKeyboardControls(robot) {
         clearTimeout(keyboardActiveTimeout);
       }
       
-      // Set timeout to remove the active class after 2 seconds of inactivity
+      // Set timeout to remove the active class after 200ms of inactivity
       keyboardActiveTimeout = setTimeout(() => {
         keyboardControlSection.classList.remove('control-active');
-      }, 2000);
+      }, 200);
     }
   };
   
