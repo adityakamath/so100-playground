@@ -60,30 +60,13 @@ let isProcessingQueue = false;
 
 let currentGamepadType = 'ps'; // Default to PlayStation layout
 
-// Joint name mapping for consistent alerts
-const jointDisplayNames = {
-    'Base_Rotation': 'Base Rotation',
-    'Shoulder_Pitch': 'Shoulder Pitch',
-    'Elbow': 'Elbow',
-    'Wrist_Pitch': 'Wrist Pitch',
-    'Wrist_Roll': 'Wrist Roll',
-    'Jaw': 'Jaw',
-    // Mapping for gamepad control types to match URDF joint names
-    'rotation': 'Base Rotation',
-    'pitch': 'Shoulder Pitch',
-    'elbow': 'Elbow',
-    'wristPitch': 'Wrist Pitch',
-    'wristRoll': 'Wrist Roll',
-    'jaw': 'Jaw'
-};
-
 /**
  * Get consistent display name for a joint
- * @param {string} jointName - Original joint name from either URDF or control mapping
- * @returns {string} Consistent display name for alerts
+ * @param {string} jointName - Original joint name from URDF
+ * @returns {string} The URDF joint name
  */
 function getJointDisplayName(jointName) {
-    return jointDisplayNames[jointName] || jointName;
+    return jointName;
 }
 
 /**
@@ -493,21 +476,26 @@ export function setupGamepadControls(robot) {
         });
     }
 
-    // Gamepad button mappings for robot joints
-    const gamepadMappings = {
-        // Square/X and Triangle/Y - Rotation
-        rotation: { jointIndex: 0, buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] }, // Face-Left: 2, Face-Right: 1
-        // Cross/A and Circle/B - Pitch
-        pitch: { jointIndex: 1, buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
-        // L1/LB and R1/RB - Elbow
-        elbow: { jointIndex: 2, buttons: [7, 5], labels: ['elbowPlus', 'elbowMinus'] }, // R2: 7, R1: 5
-        // D-pad up/down - Wrist Pitch
-        wristPitch: { jointIndex: 3, buttons: [12, 13], labels: ['wristPitchPlus', 'wristPitchMinus'] }, // Up: 12, Down: 13
-        // D-pad left/right - Wrist Roll
-        wristRoll: { jointIndex: 4, buttons: [14, 15], labels: ['wristRollPlus', 'wristRollMinus'] }, // Left: 14, Right: 15
-        // L2/LT and R2/RT - Jaw
-        jaw: { jointIndex: 5, buttons: [6, 4], labels: ['jawPlus', 'jawMinus'] } // L2: 6, L1: 4
-    };
+    // Button mappings for controls
+    const buttonPairs = [
+        { buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] }, // Face-Left: 2, Face-Right: 1
+        { buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
+        { buttons: [7, 5], labels: ['elbowPlus', 'elbowMinus'] }, // R2: 7, R1: 5
+        { buttons: [12, 13], labels: ['wristPitchPlus', 'wristPitchMinus'] }, // Up: 12, Down: 13
+        { buttons: [14, 15], labels: ['wristRollPlus', 'wristRollMinus'] }, // Left: 14, Right: 15
+        { buttons: [6, 4], labels: ['jawPlus', 'jawMinus'] } // L2: 6, L1: 4
+    ];
+
+    // Create gamepad mappings dynamically from URDF joint names
+    const gamepadMappings = {};
+    jointNames.forEach((jointName, index) => {
+        if (index < buttonPairs.length) {
+            gamepadMappings[jointName] = {
+                jointIndex: index,
+                ...buttonPairs[index]
+            };
+        }
+    });
 
     // Function to set the gamepad section as active
     const setGamepadSectionActive = () => {
@@ -644,20 +632,19 @@ export function setupGamepadControls(robot) {
         };
 
         // Process all mappings using button pairs
-        handleButtonPair(gamepadMappings.rotation, 'rotation');
-        handleButtonPair(gamepadMappings.pitch, 'pitch');
-        handleButtonPair(gamepadMappings.elbow, 'elbow');
-        handleButtonPair(gamepadMappings.wristPitch, 'wristPitch');
-        handleButtonPair(gamepadMappings.wristRoll, 'wristRoll');
-        handleButtonPair(gamepadMappings.jaw, 'jaw');
+        jointNames.forEach(jointName => {
+            if (gamepadMappings[jointName]) {
+                handleButtonPair(gamepadMappings[jointName], jointName);
+            }
+        });
 
         if (hasInput) {
             setGamepadSectionActive();
-      robot.updateMatrixWorld(true);
+            robot.updateMatrixWorld(true);
+        }
     }
-  }
 
-  return updateJoints;
+    return updateJoints;
 }
 
 /**
@@ -786,527 +773,4 @@ function handleServoError(servoId, result, error, operation, isWarning = false) 
     const logFn = isWarning ? console.warn : console.error;
     logFn(`Servo ${servoId} ${operation} ${isWarning ? 'warning' : 'failed'} with overcurrent error (${error})`);
   } else if (error !== 0 || result !== COMM_SUCCESS) {
-    errorMessage = `${statusPrefix}${isWarning ? 'Unknown error code' : operation + ' failed'}: ${error}${!isWarning ? ` (code: ${result})` : ''}`;
-    servoCommStatus[servoId].lastError = errorMessage;
-    const logFn = isWarning ? console.warn : console.error;
-    logFn(`Servo ${servoId} ${isWarning ? 'returned unknown error code' : operation + ' failed'}: ${error}`);
-  } else {
-    // 不太可能到达这里，但以防万一
-    servoCommStatus[servoId].status = 'success';
-    servoCommStatus[servoId].lastError = null;
-    return true;
-  }
-  
-  // 在UI上显示错误提醒，严重错误才弹出提醒
-  if (!isWarning || error & (ERRBIT_OVERLOAD | ERRBIT_OVERHEAT | ERRBIT_VOLTAGE)) {
-    showAlert('servo', `Servo ${servoId}: ${errorMessage}`);
-  }
-  
-  updateServoStatusUI();
-  return false;
-}
-
-// 添加真实机器人操作相关的函数
-/**
- * 切换真实机器人连接状态
- */
-async function toggleRealRobotConnection() {
-  const connectButton = document.getElementById('connectRealRobot');
-  const servoStatusContainer = document.getElementById('servoStatusContainer');
-  
-  if (!connectButton) return;
-  
-  if (!isConnectedToRealRobot) {
-    try {
-      // Create new instances if needed
-      if (!portHandler) portHandler = new PortHandler();
-      
-      // 使用固定的协议类型 SCS(1)
-      const protocolEnd = 1;
-      if (!packetHandler || packetHandler.getProtocolEnd() !== protocolEnd) {
-        packetHandler = new PacketHandler(protocolEnd);
-      }
-      
-      // Request serial port
-      connectButton.disabled = true;
-      connectButton.textContent = 'Connecting...';
-      
-      // 重置所有舵机状态为idle
-      for (let servoId = 1; servoId <= 6; servoId++) {
-        servoCommStatus[servoId] = { status: 'idle', lastError: null };
-      }
-      updateServoStatusUI();
-      
-      // 显示舵机状态区域
-      if (servoStatusContainer) {
-        servoStatusContainer.style.display = 'block';
-        // 确保状态面板默认是打开的
-        servoStatusContainer.classList.add('open');
-      }
-      
-      const success = await portHandler.requestPort();
-      if (!success) {
-        throw new Error('Failed to select port');
-      }
-      
-      // 使用固定波特率 1000000
-      const baudrate = 1000000;
-      portHandler.setBaudRate(baudrate);
-      
-      // Open the port
-      const opened = await portHandler.openPort();
-      if (!opened) {
-        throw new Error('Failed to open port');
-      }
-      
-      // 清空命令队列
-      commandQueue = [];
-      isProcessingQueue = false;
-      
-      // Set initial parameters for servos (e.g. acceleration)
-      for (let servoId = 1; servoId <= 6; servoId++) {
-        try {
-          // 更新舵机状态为处理中
-          servoCommStatus[servoId].status = 'pending';
-          updateServoStatusUI();
-          
-          // 先启用扭矩 - 集中一次性处理
-          await writeTorqueEnable(servoId, 1);
-          
-          // 按顺序执行，等待每个操作完成
-          await writeServoAcceleration(servoId, 10);
-          await writeServoSpeed(servoId, 300);
-          
-          // 读取当前位置并保存
-          const currentPosition = await readServoPosition(servoId);
-          if (currentPosition !== null) {
-            servoCurrentPositions[servoId] = currentPosition;
-            // 同时设置为最后安全位置
-            servoLastSafePositions[servoId] = currentPosition;
-            console.log(`Servo ${servoId} current position: ${currentPosition}`);
-            
-            // 读取成功，更新状态为success
-            servoCommStatus[servoId].status = 'success';
-          } else {
-            console.warn(`Could not read current position for Servo ${servoId}, using default 0`);
-            
-            // 读取失败，更新状态为error
-            servoCommStatus[servoId].status = 'error';
-            servoCommStatus[servoId].lastError = 'Failed to read initial position';
-          }
-          updateServoStatusUI();
-        } catch (err) {
-          console.warn(`Error initializing servo ${servoId}:`, err);
-          servoCommStatus[servoId].status = 'error';
-          servoCommStatus[servoId].lastError = err.message || 'Initialization error';
-          updateServoStatusUI();
-        }
-      }
-      
-      // Update UI
-      connectButton.classList.add('connected');
-      connectButton.textContent = 'Disconnect Robot';
-      isConnectedToRealRobot = true;
-      
-    } catch (error) {
-      console.error('Connection error:', error);
-      alert(`Failed to connect: ${error.message}`);
-      connectButton.textContent = 'Connect Real Robot';
-      connectButton.classList.remove('connected');
-      
-      // 显示连接错误提醒
-      showAlert('servo', `Failed to connect to robot: ${error.message}`, 5000);
-      
-      // 连接失败，更新所有舵机状态为error
-      for (let servoId = 1; servoId <= 6; servoId++) {
-        servoCommStatus[servoId].status = 'error';
-        servoCommStatus[servoId].lastError = error.message || 'Connection failed';
-      }
-      updateServoStatusUI();
-    } finally {
-      connectButton.disabled = false;
-    }
-  } else {
-    // Disconnect
-    try {
-      // 清空命令队列
-      commandQueue = [];
-      isProcessingQueue = false;
-      
-      if (portHandler && portHandler.isOpen) {
-        // Turn off torque before closing
-        for (let servoId = 1; servoId <= 6; servoId++) {
-          try {
-            await writeTorqueEnable(servoId, 0);
-          } catch (err) {
-            console.warn(`Error disabling torque for servo ${servoId}:`, err);
-          }
-        }
-        
-        await portHandler.closePort();
-      }
-      
-      // 重置所有舵机状态和位置信息
-      for (let servoId = 1; servoId <= 6; servoId++) {
-        servoCommStatus[servoId] = { status: 'idle', lastError: null };
-        servoCurrentPositions[servoId] = 0;
-        servoLastSafePositions[servoId] = 0;
-      }
-      
-      // 隐藏舵机状态区域
-      if (servoStatusContainer) {
-        servoStatusContainer.style.display = 'none';
-      }
-      
-      // Update UI
-      connectButton.classList.remove('connected');
-      connectButton.textContent = 'Connect Real Robot';
-      isConnectedToRealRobot = false;
-    } catch (error) {
-      console.error('Disconnection error:', error);
-    }
-  }
-}
-
-/**
- * 读取舵机当前位置
- * @param {number} servoId - 舵机ID (1-6)
- * @returns {number|null} 当前位置值 (0-4095)或失败时返回null
- */
-async function readServoPosition(servoId) {
-  if (!portHandler || !packetHandler) return null;
-  
-  return queueCommand(async () => {
-    try {
-      // 更新舵机状态为处理中
-      if (servoCommStatus[servoId]) {
-        servoCommStatus[servoId].status = 'pending';
-        servoCommStatus[servoId].lastError = null;
-        updateServoStatusUI();
-      }
-      
-      // 读取当前位置
-      const [rawPosition, result, error] = await packetHandler.read4ByteTxRx(
-        portHandler,
-        servoId,
-        ADDR_SCS_PRESENT_POSITION
-      );
-      
-      // 使用通用错误处理函数
-      if (!handleServoError(servoId, result, error, 'position reading')) {
-        return null;
-      }
-      
-      // 修复字节顺序问题 - 通常SCS舵机使用小端序(Little Endian)
-      // 从0xD04变为0x40D (从3332变为1037)
-      // 我们只关心最低的两个字节，所以可以通过位运算修复
-      const lowByte = (rawPosition & 0xFF00) >> 8;  // 取高字节并右移到低位
-      const highByte = (rawPosition & 0x00FF) << 8; // 取低字节并左移到高位
-      const position = (rawPosition & 0xFFFF0000) | highByte | lowByte;
-      
-      // 输出调试信息
-      console.log(`Servo ${servoId} raw: 0x${rawPosition.toString(16)}, fixed: 0x${position.toString(16)}`);
-      
-      return position & 0xFFFF; // 只取低16位，这是舵机位置的有效范围
-    } catch (error) {
-      console.error(`Error reading position from servo ${servoId}:`, error);
-      
-      // 更新舵机状态为错误
-      if (servoCommStatus[servoId]) {
-        servoCommStatus[servoId].status = 'error';
-        servoCommStatus[servoId].lastError = error.message || 'Communication error';
-        updateServoStatusUI();
-      }
-      
-      return null;
-    }
-  });
-}
-
-/**
- * 直接写入舵机扭矩使能（不使用队列，仅供内部使用）
- * @param {number} servoId - 舵机ID (1-6)
- * @param {number} enable - 0: 关闭, 1: 开启
- */
-async function writeTorqueEnableRaw(servoId, enable) {
-  if (!portHandler || !packetHandler) return;
-  
-  try {
-    const [result, error] = await packetHandler.write1ByteTxRx(
-      portHandler, 
-      servoId, 
-      ADDR_SCS_TORQUE_ENABLE, 
-      enable ? 1 : 0
-    );
-    
-    if (result !== COMM_SUCCESS) {
-      console.error(`Failed to write torque enable to servo ${servoId}: ${error}`);
-    }
-  } catch (error) {
-    console.error(`Error writing torque enable to servo ${servoId}:`, error);
-  }
-}
-
-/**
- * 写入舵机位置
- * @param {number} servoId - 舵机ID (1-6)
- * @param {number} position - 位置值 (0-4095)
- * @param {boolean} [skipLimitCheck=false] - 是否为恢复操作，已不再检查虚拟关节限制
- */
-async function writeServoPosition(servoId, position, skipLimitCheck = false) {
-  if (!isConnectedToRealRobot || !portHandler || !packetHandler) return;
-  
-  return queueCommand(async () => {
-    try {
-      // 更新舵机状态为处理中
-      servoCommStatus[servoId].status = 'pending';
-      servoCommStatus[servoId].lastError = null;
-      updateServoStatusUI();
-      
-      // Write position to servo
-      position = Math.max(0, Math.min(4095, position)); // Clamp to valid range
-      
-      // 修复字节顺序问题 - 通常SCS舵机使用小端序(Little Endian)
-      // 从0x40D变为0xD04 (从1037变为3332)
-      // 我们只需要修正低16位中的字节顺序
-      const lowByte = (position & 0xFF00) >> 8;  // 取高字节并右移到低位
-      const highByte = (position & 0x00FF) << 8; // 取低字节并左移到高位
-      const adjustedPosition = (position & 0xFFFF0000) | highByte | lowByte;
-      
-      const [result, error] = await packetHandler.write4ByteTxRx(
-        portHandler, 
-        servoId, 
-        ADDR_SCS_GOAL_POSITION, 
-        adjustedPosition & 0xFFFF // 只使用低16位
-      );
-      
-      // 使用通用错误处理函数，通信成功但有错误时作为警告处理
-      const isSuccess = result === COMM_SUCCESS;
-      if (isSuccess && error !== 0) {
-        // 通信成功但有硬件警告
-        handleServoError(servoId, result, error, 'position control', true);
-      } else {
-        // 通信失败或无错误
-        handleServoError(servoId, result, error, 'position control');
-      }
-      
-      return isSuccess;
-    } catch (error) {
-      console.error(`Error writing position to servo ${servoId}:`, error);
-      servoCommStatus[servoId].status = 'error';
-      servoCommStatus[servoId].lastError = error.message || 'Communication error';
-      updateServoStatusUI();
-      throw error;
-    }
-  });
-}
-
-/**
- * 设置舵机加速度
- * @param {number} servoId - 舵机ID (1-6)
- * @param {number} acceleration - 加速度值 (0-254)
- */
-async function writeServoAcceleration(servoId, acceleration) {
-  if (!isConnectedToRealRobot || !portHandler || !packetHandler) return;
-  
-  return queueCommand(async () => {
-    try {
-      // 更新舵机状态为处理中
-      servoCommStatus[servoId].status = 'pending';
-      servoCommStatus[servoId].lastError = null;
-      updateServoStatusUI();
-      
-      acceleration = Math.max(0, Math.min(254, acceleration)); // Clamp to valid range
-      
-      const [result, error] = await packetHandler.write1ByteTxRx(
-        portHandler, 
-        servoId, 
-        ADDR_SCS_GOAL_ACC, 
-        acceleration
-      );
-      
-      // 使用通用错误处理函数
-      return handleServoError(servoId, result, error, 'acceleration control');
-    } catch (error) {
-      console.error(`Error writing acceleration to servo ${servoId}:`, error);
-      servoCommStatus[servoId].status = 'error';
-      servoCommStatus[servoId].lastError = error.message || 'Communication error';
-      updateServoStatusUI();
-      throw error;
-    }
-  });
-}
-
-/**
- * 设置舵机速度
- * @param {number} servoId - 舵机ID (1-6)
- * @param {number} speed - 速度值 (0-2000)
- */
-async function writeServoSpeed(servoId, speed) {
-  if (!isConnectedToRealRobot || !portHandler || !packetHandler) return;
-  
-  return queueCommand(async () => {
-    try {
-      // 更新舵机状态为处理中
-      servoCommStatus[servoId].status = 'pending';
-      servoCommStatus[servoId].lastError = null;
-      updateServoStatusUI();
-      
-      speed = Math.max(0, Math.min(2000, speed)); // Clamp to valid range
-      
-      const [result, error] = await packetHandler.write2ByteTxRx(
-        portHandler, 
-        servoId, 
-        ADDR_SCS_GOAL_SPEED, 
-        speed
-      );
-      
-      // 使用通用错误处理函数
-      return handleServoError(servoId, result, error, 'speed control');
-    } catch (error) {
-      console.error(`Error writing speed to servo ${servoId}:`, error);
-      servoCommStatus[servoId].status = 'error';
-      servoCommStatus[servoId].lastError = error.message || 'Communication error';
-      updateServoStatusUI();
-      throw error;
-    }
-  });
-}
-
-/**
- * 设置舵机扭矩开关
- * @param {number} servoId - 舵机ID (1-6)
- * @param {number} enable - 0: 关闭, 1: 开启
- */
-async function writeTorqueEnable(servoId, enable) {
-  if (!isConnectedToRealRobot || !portHandler || !packetHandler) return;
-  
-  return queueCommand(async () => {
-    try {
-      // 更新舵机状态为处理中
-      servoCommStatus[servoId].status = 'pending';
-      servoCommStatus[servoId].lastError = null;
-      updateServoStatusUI();
-      
-      const [result, error] = await packetHandler.write1ByteTxRx(
-        portHandler, 
-        servoId, 
-        ADDR_SCS_TORQUE_ENABLE, 
-        enable ? 1 : 0
-      );
-      
-      // 使用通用错误处理函数
-      return handleServoError(servoId, result, error, 'torque control');
-    } catch (error) {
-      console.error(`Error writing torque enable to servo ${servoId}:`, error);
-      servoCommStatus[servoId].status = 'error';
-      servoCommStatus[servoId].lastError = error.message || 'Communication error';
-      updateServoStatusUI();
-      throw error;
-    }
-  });
-}
-
-/**
- * 更新舵机通信状态UI
- */
-function updateServoStatusUI() {
-  // 检查是否存在状态显示区域
-  const statusContainer = document.getElementById('servoStatusContainer');
-  if (!statusContainer) {
-    return;
-  }
-  
-  // 更新每个舵机的状态
-  for (let servoId = 1; servoId <= 6; servoId++) {
-    const statusElement = document.getElementById(`servo-${servoId}-status`);
-    if (statusElement) {
-      const servoStatus = servoCommStatus[servoId];
-      
-      // 根据状态设置颜色
-      let statusColor = '#888'; // 默认灰色 (idle)
-      
-      if (servoStatus.status === 'success') {
-        statusColor = '#4CAF50'; // 绿色
-      } else if (servoStatus.status === 'error') {
-        statusColor = '#F44336'; // 红色
-      } else if (servoStatus.status === 'pending') {
-        statusColor = '#2196F3'; // 蓝色
-      } else if (servoStatus.status === 'warning') {
-        statusColor = '#FF9800'; // 橙色（警告状态）
-      }
-      
-      // 更新状态文本和颜色
-      statusElement.style.color = statusColor;
-      statusElement.textContent = servoStatus.status;
-      
-      // 更新错误信息提示
-      const errorElement = document.getElementById(`servo-${servoId}-error`);
-      if (errorElement) {
-        if (servoStatus.lastError) {
-          errorElement.textContent = servoStatus.lastError;
-          errorElement.style.display = 'block';
-        } else {
-          errorElement.style.display = 'none';
-        }
-      }
-    }
-  }
-}
-
-function updateGamepadLabels() {
-    const commonLabels = {
-        elbowPlus: 'R2',
-        elbowMinus: 'R1',
-        wristPitchPlus: '↑',
-        wristPitchMinus: '↓',
-        wristRollPlus: '←',
-        wristRollMinus: '→',
-        jawPlus: 'L2',
-        jawMinus: 'L1'
-    };
-
-    const buttonLabels = {
-        ps: {
-            rotationPlus: '□',
-            rotationMinus: '○',
-            pitchPlus: '△',
-            pitchMinus: '×',
-            ...commonLabels
-        },
-        nintendo: {
-            rotationPlus: 'Y',
-            rotationMinus: 'A',
-            pitchPlus: 'X',
-            pitchMinus: 'B',
-            ...commonLabels
-        },
-        xbox: {
-            rotationPlus: 'X',
-            rotationMinus: 'B',
-            pitchPlus: 'Y',
-            pitchMinus: 'A',
-            ...commonLabels
-        }
-    };
-
-    // Update all button labels in the UI
-    const buttonElements = document.querySelectorAll('.key[data-key]');
-    buttonElements.forEach(button => {
-        const buttonKey = button.getAttribute('data-key');
-        if (buttonLabels[currentGamepadType][buttonKey]) {
-            button.textContent = buttonLabels[currentGamepadType][buttonKey];
-        }
-    });
-}
-
-// Add event listener for gamepad type selection
-document.getElementById('gamepadType').addEventListener('change', (event) => {
-    currentGamepadType = event.target.value;
-    updateGamepadLabels();
-});
-
-// Call updateGamepadLabels on initial load
-document.addEventListener('DOMContentLoaded', () => {
-    updateGamepadLabels();
-});
+    errorMessage = `${statusPrefix}${isWarning ? 'Unknown error code' : operation + ' failed'}: ${error}${!isWarning ? ` (code: ${result})`
