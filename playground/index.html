@@ -381,27 +381,38 @@
                 visibility: hidden;
                 position: absolute;
                 top: -90px;
-                right: 0;
-                background: rgb(0, 0, 0);
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.9);
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 color: white;
                 border-radius: 4px;
                 padding: 15px;
                 width: 300px;
                 font-size: 14px;
                 z-index: 1002;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
                 opacity: 0;
                 transition: opacity 0.3s;
             }
             
+            .tooltip strong {
+                display: block;
+                margin-bottom: 10px;
+            }
+            
             .tooltip ul {
-                margin: 10px 0 0 0;
+                margin: 0;
                 padding-left: 20px;
             }
             
             .tooltip li {
                 margin-bottom: 8px;
                 line-height: 1.4;
+            }
+
+            .tooltip li:last-child {
+                margin-bottom: 0;
             }
             
             .help-icon:hover .tooltip,
@@ -549,11 +560,10 @@
                             <button id="connectGamepad" class="connect-button">Connect Gamepad</button>
                             <div class="help-icon">?
                                 <div class="tooltip">
-                                    Before connecting:
+                                    <strong>Before connecting:</strong>
                                     <ul>
-                                        <li>Select the correct device when prompted</li>
+                                        <li>Connect gamepad via USB/Bluetooth</li>
                                         <li>Press any button to activate</li>
-                                        <li>Click "Connect Gamepad" to start</li>
                                     </ul>
                                 </div>
                             </div>
