@@ -495,18 +495,18 @@ export function setupGamepadControls(robot) {
 
     // Gamepad button mappings for robot joints
     const gamepadMappings = {
-        // Square/X and Triangle/Y - Rotation
-        rotation: { jointIndex: 0, buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] }, // Face-Left: 2, Face-Right: 1
-        // Cross/A and Circle/B - Pitch
-        pitch: { jointIndex: 1, buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
+        // Square/X and Triangle/Y - Base_Rotation
+        'Base_Rotation': { jointIndex: 0, buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] }, // Face-Left: 2, Face-Right: 1
+        // Cross/A and Circle/B - Shoulder_Pitch
+        'Shoulder_Pitch': { jointIndex: 1, buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
         // L1/LB and R1/RB - Elbow
-        elbow: { jointIndex: 2, buttons: [7, 5], labels: ['elbowPlus', 'elbowMinus'] }, // R2: 7, R1: 5
-        // D-pad up/down - Wrist Pitch
-        wristPitch: { jointIndex: 3, buttons: [12, 13], labels: ['wristPitchPlus', 'wristPitchMinus'] }, // Up: 12, Down: 13
-        // D-pad left/right - Wrist Roll
-        wristRoll: { jointIndex: 4, buttons: [14, 15], labels: ['wristRollPlus', 'wristRollMinus'] }, // Left: 14, Right: 15
+        'Elbow': { jointIndex: 2, buttons: [7, 5], labels: ['elbowPlus', 'elbowMinus'] }, // R2: 7, R1: 5
+        // D-pad up/down - Wrist_Pitch
+        'Wrist_Pitch': { jointIndex: 3, buttons: [12, 13], labels: ['wristPitchPlus', 'wristPitchMinus'] }, // Up: 12, Down: 13
+        // D-pad left/right - Wrist_Roll
+        'Wrist_Roll': { jointIndex: 4, buttons: [14, 15], labels: ['wristRollPlus', 'wristRollMinus'] }, // Left: 14, Right: 15
         // L2/LT and R2/RT - Jaw
-        jaw: { jointIndex: 5, buttons: [6, 4], labels: ['jawPlus', 'jawMinus'] } // L2: 6, L1: 4
+        'Jaw': { jointIndex: 5, buttons: [6, 4], labels: ['jawPlus', 'jawMinus'] } // L2: 6, L1: 4
     };
 
     // Function to set the gamepad section as active
@@ -644,12 +644,12 @@ export function setupGamepadControls(robot) {
         };
 
         // Process all mappings using button pairs
-        handleButtonPair(gamepadMappings.rotation, 'rotation');
-        handleButtonPair(gamepadMappings.pitch, 'pitch');
-        handleButtonPair(gamepadMappings.elbow, 'elbow');
-        handleButtonPair(gamepadMappings.wristPitch, 'wristPitch');
-        handleButtonPair(gamepadMappings.wristRoll, 'wristRoll');
-        handleButtonPair(gamepadMappings.jaw, 'jaw');
+        handleButtonPair(gamepadMappings.Base_Rotation, 'Base_Rotation');
+        handleButtonPair(gamepadMappings.Shoulder_Pitch, 'Shoulder_Pitch');
+        handleButtonPair(gamepadMappings.Elbow, 'Elbow');
+        handleButtonPair(gamepadMappings.Wrist_Pitch, 'Wrist_Pitch');
+        handleButtonPair(gamepadMappings.Wrist_Roll, 'Wrist_Roll');
+        handleButtonPair(gamepadMappings.Jaw, 'Jaw');
 
         if (hasInput) {
             setGamepadSectionActive();
