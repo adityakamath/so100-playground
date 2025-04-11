@@ -553,15 +553,53 @@ export function setupGamepadControls(robot) {
 
     // Function to highlight a button element
     const highlightButton = (buttonId, isPressed) => {
-        const buttonElement = document.querySelector(`.key[data-key="${buttonId}"]`);
+        // Find the button element using data-key selector (case-insensitive)
+        const buttonElements = document.querySelectorAll('.key[data-key]');
+        let buttonElement = null;
+        
+        // Find the button with matching data-key (case-insensitive)
+        for (const element of buttonElements) {
+            const elementKey = element.getAttribute('data-key');
+            if (elementKey && elementKey.toLowerCase() === buttonId.toLowerCase()) {
+                buttonElement = element;
+                break;
+            }
+        }
+        
         if (buttonElement) {
             if (isPressed) {
                 buttonElement.classList.add('key-pressed');
             } else {
                 buttonElement.classList.remove('key-pressed');
             }
+            // Also update the gamepad section active state
+            if (isPressed) {
+                setGamepadSectionActive();
+            }
         }
     };
+
+    // Function to update button labels based on gamepad type
+    const updateButtonLabels = (gamepadType) => {
+        const buttons = document.querySelectorAll('.key[data-ps]');
+        buttons.forEach(button => {
+            const label = button.getAttribute(`data-${gamepadType}`);
+            if (label) {
+                button.textContent = label;
+            }
+        });
+    };
+
+    // Add event listener for gamepad type selector
+    const gamepadTypeSelect = document.getElementById('gamepadType');
+    if (gamepadTypeSelect) {
+        gamepadTypeSelect.addEventListener('change', (e) => {
+            currentGamepadType = e.target.value;
+            updateButtonLabels(currentGamepadType);
+        });
+        // Initialize with default value
+        updateButtonLabels(currentGamepadType);
+    }
 
     // Function to update joints based on gamepad input
     function updateJoints() {
@@ -580,12 +618,13 @@ export function setupGamepadControls(robot) {
         // Handle button inputs
         const handleButtonPair = (mapping, jointType) => {
             const [buttonPlus, buttonMinus] = mapping.buttons;
+            const [labelPlus, labelMinus] = mapping.labels;
             const buttonPlusPressed = gamepad.buttons[buttonPlus].pressed;
             const buttonMinusPressed = gamepad.buttons[buttonMinus].pressed;
 
             // Highlight buttons based on press state
-            highlightButton(`button_${buttonPlus}`, buttonPlusPressed);
-            highlightButton(`button_${buttonMinus}`, buttonMinusPressed);
+            highlightButton(labelPlus, buttonPlusPressed);
+            highlightButton(labelMinus, buttonMinusPressed);
 
             if (buttonPlusPressed || buttonMinusPressed) {
                 const jointName = jointNames[mapping.jointIndex];
@@ -944,40 +983,4 @@ async function toggleRealRobotConnection() {
       updateServoStatusUI();
     }
   }
-}
-
-/**
- * Highlight a button when pressed
- * @param {string} buttonId - ID of the button to highlight
- * @param {boolean} isPressed - Whether the button is pressed
- */
-function highlightButton(buttonId, isPressed) {
-    const button = document.getElementById(buttonId);
-    if (button) {
-        if (isPressed) {
-            button.classList.add('key-pressed');
-        } else {
-            button.classList.remove('key-pressed');
-        }
-    }
-}
-
-/**
- * Handle a pair of buttons for a joint
- * @param {Object} mapping - Button mapping object
- * @param {string} jointType - Type of joint for error messages
- */
-function handleButtonPair(mapping, jointType) {
-    const gamepad = navigator.getGamepads()[0];
-    if (!gamepad) return;
-
-    // Get pressed state of both buttons
-    const positivePressed = gamepad.buttons[mapping.positive].pressed;
-    const negativePressed = gamepad.buttons[mapping.negative].pressed;
-
-    // Highlight buttons based on pressed state
-    highlightButton(`button_${mapping.positive}`, positivePressed);
-    highlightButton(`button_${mapping.negative}`, negativePressed);
-
-    // Rest of the existing handleButtonPair code...
 }
