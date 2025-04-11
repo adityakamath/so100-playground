@@ -61,15 +61,6 @@ let isProcessingQueue = false;
 let currentGamepadType = 'ps'; // Default to PlayStation layout
 
 /**
- * Get consistent display name for a joint
- * @param {string} jointName - Original joint name from URDF
- * @returns {string} The URDF joint name
- */
-function getJointDisplayName(jointName) {
-    return jointName;
-}
-
-/**
  * Show warning alerts
  * @param {string} type - Alert type ('joint' for virtual joint limits, 'servo' for real servo errors)
  * @param {string} message - Message to display
@@ -379,7 +370,7 @@ export function setupKeyboardControls(robot) {
             if (!isJointWithinLimits(robot.joints[jointName], newValue)) {
               console.warn(`Joint ${jointName} would exceed its limits. Movement prevented.`);
               // 显示虚拟关节限位提醒
-              showAlert('joint', `Joint ${getJointDisplayName(jointName)} has reached its limit!`);
+              showAlert('joint', `Joint ${jointName} has reached its limit!`);
               return; // 跳过这个关节的更新
             }
             
@@ -417,7 +408,7 @@ export function setupKeyboardControls(robot) {
                 direction,
                 stepSize,
                 newValue,
-                getJointDisplayName(jointName)
+                jointName
               );
                   if (success) {
                 // Movement successful
@@ -609,7 +600,7 @@ export function setupGamepadControls(robot) {
                                 direction,
                                 stepSize,
                                 newValue,
-                                getJointDisplayName(jointType)
+                                jointType
                             );
                             if (success) {
                                 hasInput = true;
@@ -620,7 +611,7 @@ export function setupGamepadControls(robot) {
                             hasInput = true;
                         }
                     } else {
-                        showAlert('joint', `Joint ${getJointDisplayName(jointType)} has reached its limit!`);
+                        showAlert('joint', `Joint ${jointType} has reached its limit!`);
                     }
                 }
             }
