@@ -917,4 +917,31 @@ async function toggleRealRobotConnection() {
           try {
             await writeTorqueEnable(servoId, 0);
           } catch (err) {
-            console.warn(`
+            console.warn(`Failed to disable torque for servo ${servoId}: ${err.message}`);
+          }
+        }
+      }
+      
+      // Update UI
+      connectButton.classList.remove('connected');
+      connectButton.textContent = 'Connect Real Robot';
+      isConnectedToRealRobot = false;
+      
+    } catch (error) {
+      console.error('Disconnection error:', error);
+      alert(`Failed to disconnect: ${error.message}`);
+      connectButton.classList.remove('connected');
+      connectButton.textContent = 'Connect Real Robot';
+      
+      // 显示断开连接错误提醒
+      showAlert('servo', `Failed to disconnect from robot: ${error.message}`, 5000);
+      
+      // 断开连接，更新所有舵机状态为error
+      for (let servoId = 1; servoId <= 6; servoId++) {
+        servoCommStatus[servoId].status = 'error';
+        servoCommStatus[servoId].lastError = error.message || 'Disconnection failed';
+      }
+      updateServoStatusUI();
+    }
+  }
+}
