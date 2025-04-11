@@ -584,8 +584,8 @@ export function setupGamepadControls(robot) {
             const buttonMinusPressed = gamepad.buttons[buttonMinus].pressed;
 
             // Highlight buttons based on press state
-            highlightButton(`${jointType}Plus`, buttonPlusPressed);
-            highlightButton(`${jointType}Minus`, buttonMinusPressed);
+            highlightButton(`button_${buttonPlus}`, buttonPlusPressed);
+            highlightButton(`button_${buttonMinus}`, buttonMinusPressed);
 
             if (buttonPlusPressed || buttonMinusPressed) {
                 const jointName = jointNames[mapping.jointIndex];
@@ -944,4 +944,40 @@ async function toggleRealRobotConnection() {
       updateServoStatusUI();
     }
   }
+}
+
+/**
+ * Highlight a button when pressed
+ * @param {string} buttonId - ID of the button to highlight
+ * @param {boolean} isPressed - Whether the button is pressed
+ */
+function highlightButton(buttonId, isPressed) {
+    const button = document.getElementById(buttonId);
+    if (button) {
+        if (isPressed) {
+            button.classList.add('key-pressed');
+        } else {
+            button.classList.remove('key-pressed');
+        }
+    }
+}
+
+/**
+ * Handle a pair of buttons for a joint
+ * @param {Object} mapping - Button mapping object
+ * @param {string} jointType - Type of joint for error messages
+ */
+function handleButtonPair(mapping, jointType) {
+    const gamepad = navigator.getGamepads()[0];
+    if (!gamepad) return;
+
+    // Get pressed state of both buttons
+    const positivePressed = gamepad.buttons[mapping.positive].pressed;
+    const negativePressed = gamepad.buttons[mapping.negative].pressed;
+
+    // Highlight buttons based on pressed state
+    highlightButton(`button_${mapping.positive}`, positivePressed);
+    highlightButton(`button_${mapping.negative}`, negativePressed);
+
+    // Rest of the existing handleButtonPair code...
 }
