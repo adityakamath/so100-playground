@@ -135,7 +135,6 @@ function init() {
       window.robot.traverse(c => {
         c.castShadow = true;
       });
-      console.log(window.robot.joints);
       // 记录关节限制信息到控制台，便于调试
       logJointLimits(window.robot);
       
