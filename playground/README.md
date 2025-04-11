@@ -30,7 +30,6 @@ The application supports gamepad input using the Gamepad API. Connect any compat
 
 #### Gamepad Features
 - Real-time button highlighting when pressed
-- Customizable button mappings through the UI
 - Support for multiple gamepad types (Xbox, PlayStation, generic)
 - Automatic gamepad detection and connection
 - Visual feedback for button presses and joint limits
