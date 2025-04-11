@@ -469,10 +469,10 @@ export function setupGamepadControls(robot) {
 
     // Gamepad button mappings for robot joints
     const gamepadMappings = {
-        // Square/X and Triangle/Y - Base_Rotation
-        'Base_Rotation': { jointIndex: 0, buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] }, // Face-Left: 2, Face-Right: 1
-        // Cross/A and Circle/B - Shoulder_Pitch
-        'Shoulder_Pitch': { jointIndex: 1, buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
+        // Square/X and Triangle/Y - Rotation
+        'Rotation': { jointIndex: 0, buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] }, // Face-Left: 2, Face-Right: 1
+        // Cross/A and Circle/B - Pitch
+        'Pitch': { jointIndex: 1, buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
         // L1/LB and R1/RB - Elbow
         'Elbow': { jointIndex: 2, buttons: [7, 5], labels: ['elbowPlus', 'elbowMinus'] }, // R2: 7, R1: 5
         // D-pad up/down - Wrist_Pitch
@@ -618,8 +618,8 @@ export function setupGamepadControls(robot) {
         };
 
         // Process all mappings using button pairs
-        handleButtonPair(gamepadMappings.Base_Rotation, 'Base_Rotation');
-        handleButtonPair(gamepadMappings.Shoulder_Pitch, 'Shoulder_Pitch');
+        handleButtonPair(gamepadMappings.Rotation, 'Rotation');
+        handleButtonPair(gamepadMappings.Pitch, 'Pitch');
         handleButtonPair(gamepadMappings.Elbow, 'Elbow');
         handleButtonPair(gamepadMappings.Wrist_Pitch, 'Wrist_Pitch');
         handleButtonPair(gamepadMappings.Wrist_Roll, 'Wrist_Roll');
