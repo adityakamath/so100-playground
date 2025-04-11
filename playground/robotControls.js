@@ -467,7 +467,7 @@ export function setupGamepadControls(robot) {
         });
     }
 
-    // Define button pairs for controls (order matches URDF joint order)
+    // Button mappings for controls
     const buttonPairs = [
         { buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] }, // Face-Left: 2, Face-Right: 1
         { buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
@@ -917,80 +917,4 @@ async function toggleRealRobotConnection() {
           try {
             await writeTorqueEnable(servoId, 0);
           } catch (err) {
-            console.warn(`Error turning off torque for servo ${servoId}:`, err);
-          }
-        }
-      }
-      
-      // Close the port
-      await portHandler.closePort();
-      
-      // Update UI
-      connectButton.classList.remove('connected');
-      connectButton.textContent = 'Connect Real Robot';
-      isConnectedToRealRobot = false;
-      
-    } catch (error) {
-      console.error('Disconnection error:', error);
-      alert(`Failed to disconnect: ${error.message}`);
-      connectButton.classList.remove('connected');
-      connectButton.textContent = 'Connect Real Robot';
-      
-      // 显示断开连接错误提醒
-      showAlert('servo', `Failed to disconnect from robot: ${error.message}`, 5000);
-      
-      // 断开连接，更新所有舵机状态为error
-      for (let servoId = 1; servoId <= 6; servoId++) {
-        servoCommStatus[servoId].status = 'error';
-        servoCommStatus[servoId].lastError = error.message || 'Disconnection failed';
-      }
-      updateServoStatusUI();
-    }
-  }
-}
-
-// 添加其他辅助函数
-/**
- * 更新舵机状态UI
- */
-function updateServoStatusUI() {
-  const servoStatusContainer = document.getElementById('servoStatusContainer');
-  if (servoStatusContainer) {
-    servoStatusContainer.innerHTML = '';
-    for (let servoId = 1; servoId <= 6; servoId++) {
-      const statusElement = document.createElement('div');
-      statusElement.className = `servo-status servo-${servoId}`;
-      statusElement.textContent = `Servo ${servoId}: ${servoCommStatus[servoId].status}`;
-      if (servoCommStatus[servoId].lastError) {
-        const errorElement = document.createElement('span');
-        errorElement.className = 'servo-error';
-        errorElement.textContent = ` (${servoCommStatus[servoId].lastError})`;
-        statusElement.appendChild(errorElement);
-      }
-      servoStatusContainer.appendChild(statusElement);
-    }
-  }
-}
-
-// 添加其他辅助函数
-/**
- * 更新舵机状态UI
- */
-function updateServoStatusUI() {
-  const servoStatusContainer = document.getElementById('servoStatusContainer');
-  if (servoStatusContainer) {
-    servoStatusContainer.innerHTML = '';
-    for (let servoId = 1; servoId <= 6; servoId++) {
-      const statusElement = document.createElement('div');
-      statusElement.className = `servo-status servo-${servoId}`;
-      statusElement.textContent = `Servo ${servoId}: ${servoCommStatus[servoId].status}`;
-      if (servoCommStatus[servoId].lastError) {
-        const errorElement = document.createElement('span');
-        errorElement.className = 'servo-error';
-        errorElement.textContent = ` (${servoCommStatus[servoId].lastError})`;
-        statusElement.appendChild(errorElement);
-      }
-      servoStatusContainer.appendChild(statusElement);
-    }
-  }
-}
+            console.warn(`
