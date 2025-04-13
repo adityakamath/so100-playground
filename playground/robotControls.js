@@ -917,13 +917,6 @@ async function toggleRealRobotConnection() {
       }
       updateServoStatusUI();
       
-      // 显示舵机状态区域
-      if (servoStatusContainer) {
-        servoStatusContainer.style.display = 'block';
-        // 确保状态面板默认是打开的
-        servoStatusContainer.classList.add('open');
-      }
-      
       const success = await portHandler.requestPort();
       if (!success) {
         throw new Error('Failed to select port');
@@ -988,11 +981,22 @@ async function toggleRealRobotConnection() {
       connectButton.textContent = 'Disconnect Robot';
       isConnectedToRealRobot = true;
       
+      // Show servo status container only after successful connection
+      if (servoStatusContainer) {
+        servoStatusContainer.style.display = 'block';
+        servoStatusContainer.classList.add('open');
+      }
+      
     } catch (error) {
       console.error('Connection error:', error);
       alert(`Failed to connect: ${error.message}`);
       connectButton.textContent = 'Connect Real Robot';
       connectButton.classList.remove('connected');
+      
+      // Hide servo status container on connection failure
+      if (servoStatusContainer) {
+        servoStatusContainer.style.display = 'none';
+      }
       
       // 显示连接错误提醒
       showAlert('servo', `Failed to connect to robot: ${error.message}`, 5000);
