@@ -931,6 +931,12 @@ async function toggleRealRobotConnection() {
       if (!opened) {
         throw new Error('Failed to open port');
       }
+
+      // Show servo status container only after the port is opened
+      if (servoStatusContainer) {
+        servoStatusContainer.style.display = 'block';
+        servoStatusContainer.classList.add('open');
+      }
       
       // 清空命令队列
       commandQueue = [];
@@ -980,12 +986,6 @@ async function toggleRealRobotConnection() {
       connectButton.classList.add('connected');
       connectButton.textContent = 'Disconnect Robot';
       isConnectedToRealRobot = true;
-      
-      // Show servo status container only after successful connection
-      if (servoStatusContainer) {
-        servoStatusContainer.style.display = 'block';
-        servoStatusContainer.classList.add('open');
-      }
       
     } catch (error) {
       console.error('Connection error:', error);
