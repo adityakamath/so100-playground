@@ -1,4 +1,4 @@
-# Bambot Player
+# Playground
 
 A browser-based application for running simulations and controlling Bambot and SO100 arm. This interactive platform allows users to visualize and manipulate robotic models in real-time.
 
@@ -41,6 +41,7 @@ The application now supports controlling real robot arms with Feetech SCS servo 
 1. Keyboard and gamepad controls will simultaneously move both the virtual and real robot
 2. Robot movement speed can be adjusted using the speed slider
 3. The real robot connection can be toggled using the "Connect Real Robot" button in the control panel
+4. Each servo's direction can be inverted using the direction toggle buttons next to their status indicators
 
 ### How it Works
 
@@ -48,6 +49,7 @@ The system uses a relative movement approach:
 1. When connecting, it reads the current positions of all servos 
 2. Keyboard and gamepad commands apply relative position changes rather than absolute positions
 3. This ensures the real robot responds properly regardless of its initial position
+4. Direction toggles allow you to invert individual servo movements if they're rotating in the wrong direction
 
 ### Connection Requirements
 
