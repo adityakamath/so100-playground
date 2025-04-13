@@ -44,7 +44,7 @@ function init() {
   scene.background = new Color(0x263238);
 
   // Add cyan sphere at origin
-  const sphereGeometry = new SphereGeometry(0.2, 32, 32);
+  const sphereGeometry = new SphereGeometry(0.1, 32, 32);
   const sphereMaterial = new MeshBasicMaterial({ color: 0x00ffff });
   sphere = new Mesh(sphereGeometry, sphereMaterial);
   scene.add(sphere);
@@ -224,12 +224,23 @@ function updateSpherePosition() {
   const gamepad = gamepads[0]; // Get first gamepad
   
   if (gamepad) {
-    // Left joystick: X (left/right) and Y (front/back)
-    const leftX = gamepad.axes[0]; // Left/Right
-    const leftY = gamepad.axes[1]; // Front/Back
+    // Apply dead zone to joystick values
+    const deadZone = 0.1;
     
-    // Right joystick: Y (up/down)
-    const rightY = gamepad.axes[3]; // Up/Down
+    // Helper function to apply dead zone
+    const applyDeadZone = (value) => {
+      if (Math.abs(value) < deadZone) {
+        return 0;
+      }
+      return value;
+    };
+    
+    // Left joystick: X (left/right) and Y (front/back)
+    const leftX = applyDeadZone(gamepad.axes[0]); // Left/Right
+    const leftY = applyDeadZone(gamepad.axes[1]); // Front/Back
+    
+    // Right joystick: Y (up/down) - reversed direction
+    const rightY = applyDeadZone(-gamepad.axes[3]); // Up/Down (negative to reverse direction)
     
     // Apply movement with some speed factor
     const speed = 0.1;
