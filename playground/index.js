@@ -45,7 +45,7 @@ function init() {
 
   // Add cyan sphere at origin
   const sphereGeometry = new SphereGeometry(0.1, 32, 32);
-  const sphereMaterial = new MeshBasicMaterial({ color: 0x2196F3 });
+  const sphereMaterial = new MeshBasicMaterial({ color: 0x1f97f4 });
   sphere = new Mesh(sphereGeometry, sphereMaterial);
   scene.add(sphere);
 
