@@ -31,6 +31,27 @@ let scene, camera, renderer, controls;
 window.robot = null;
 let keyboardUpdate, gamepadUpdate;
 
+// Get the dropdown element
+const modelSelect = document.getElementById('robotModelSelect');
+
+// Set initial value
+let modelToLoad = modelSelect ? modelSelect.value : "SO100";
+
+// Listen for changes
+if (modelSelect) {
+  modelSelect.addEventListener('change', (e) => {
+    modelToLoad = e.target.value;
+    if (typeof loadRobotModel === 'function') {
+      loadRobotModel(modelToLoad);
+    }
+  });
+}
+
+// On page load, load the initial model
+if (typeof loadRobotModel === 'function') {
+  loadRobotModel(modelToLoad);
+}
+
 init();
 render();
 
