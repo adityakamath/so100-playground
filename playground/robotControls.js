@@ -70,7 +70,7 @@ const servoDirectionMapping = {
   6: false   // gripper servo
 };
 
-let isGamepadConnected = false;
+export let isGamepadConnected = false;
 
 /**
  * Display alert message for joint limits or servo errors
