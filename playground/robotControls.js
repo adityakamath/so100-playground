@@ -369,19 +369,15 @@ export function setupGamepadControls(robot) {
       });
   }
 
-  // For gamepad controls, update buttonPairs and mapping logic to use joint names
+  // Button mappings for gamepad controls (order matters!)
   const buttonPairs = [
-    { jointName: 'Rotation', buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] },
-    { jointName: 'Pitch', buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] },
-    { jointName: 'Elbow', buttons: [7, 5], labels: ['elbowPlus', 'elbowMinus'] },
-    { jointName: 'Wrist_Pitch', buttons: [12, 13], labels: ['wristPitchPlus', 'wristPitchMinus'] },
-    { jointName: 'Wrist_Roll', buttons: [14, 15], labels: ['wristRollPlus', 'wristRollMinus'] },
-    { jointName: 'Jaw', buttons: [6, 4], labels: ['jawPlus', 'jawMinus'] },
+    { buttons: [2, 1], labels: ['rotationPlus', 'rotationMinus'] }, // Face-Left: 2, Face-Right: 1
+    { buttons: [3, 0], labels: ['pitchPlus', 'pitchMinus'] }, // Face-Top: 3, Face-Bottom: 0
+    { buttons: [7, 5], labels: ['elbowPlus', 'elbowMinus'] }, // R2: 7, R1: 5
+    { buttons: [12, 13], labels: ['wristPitchPlus', 'wristPitchMinus'] }, // Up: 12, Down: 13
+    { buttons: [14, 15], labels: ['wristRollPlus', 'wristRollMinus'] }, // Left: 14, Right: 15
+    { buttons: [6, 4], labels: ['jawPlus', 'jawMinus'] } // L2: 6, L1: 4
   ];
-  const gamepadMappings = {};
-  buttonPairs.forEach(pair => {
-    gamepadMappings[pair.jointName] = pair;
-  });
 
   // Function to set the gamepad section as active
   const setGamepadSectionActive = () => {
@@ -482,16 +478,14 @@ export function setupGamepadControls(robot) {
 
       let hasInput = false;
 
-      // Handle button inputs
-      const handleButtonPair = (mapping, jointType) => {
-          const { jointName, buttons, labels } = mapping;
-          const [buttonPlus, buttonMinus] = buttons;
-          const [labelPlus, labelMinus] = labels;
+      buttonPairs.forEach((pair, index) => {
+          if (index >= jointNames.length) return;
+          const jointName = jointNames[index];
+          if (!robot.joints[jointName]) return;
+          const [buttonPlus, buttonMinus] = pair.buttons;
+          const [labelPlus, labelMinus] = pair.labels;
           const buttonPlusPressed = gamepad.buttons[buttonPlus].pressed;
           const buttonMinusPressed = gamepad.buttons[buttonMinus].pressed;
-
-          // Get current gamepad type
-          const currentGamepadType = gamepadTypeSelect ? gamepadTypeSelect.value : 'ps';
 
           // Highlight buttons based on press state using current gamepad type
           const plusElement = document.querySelector(`.key[data-key="${labelPlus}"][data-${currentGamepadType}]`);
@@ -516,119 +510,44 @@ export function setupGamepadControls(robot) {
 
           if (buttonPlusPressed || buttonMinusPressed) {
               hasInput = true;
-              const jointName = jointNames[mapping.jointIndex];
-              if (jointName && robot.joints[jointName]) {
-                  const joint = robot.joints[jointName];
-                  const direction = buttonPlusPressed ? 1 : -1;
-                  const newValue = joint.angle + (direction * stepSize);
+              const joint = robot.joints[jointName];
+              const direction = buttonPlusPressed ? 1 : -1;
+              const newValue = joint.angle + (direction * stepSize);
+              
+              if (isJointWithinLimits(joint, newValue)) {
+                  const servoId = index + 1;
+                  const effectiveDirection = servoDirectionMapping[servoId] ? -direction : direction;
+                  const stepChange = Math.round((effectiveDirection * stepSize) * (4096 / (2 * Math.PI)));
+                  let newPosition = (servoCurrentPositions[servoId] + stepChange) % 4096;
+
+                  robot.joints[jointName].setJointValue(newValue);
+                  robot.updateMatrixWorld(true);
                   
-                  // Check joint limits and show alert if needed
-                  if (isJointWithinLimits(joint, newValue)) {
-                      // Calculate new values
-                      const effectiveDirection = servoDirectionMapping[mapping.jointIndex + 1] ? -direction : direction;
-                      const stepChange = Math.round((effectiveDirection * stepSize) * (4096 / (2 * Math.PI)));
-                      let newPosition = (servoCurrentPositions[mapping.jointIndex + 1] + stepChange) % 4096;
-
-                      // Update visualization immediately
-                      robot.joints[jointName].setJointValue(newValue);
-                      robot.updateMatrixWorld(true);
-                      
-                      // If connected to real robot, control real servo
-                      if (isConnectedToRealRobot) {
-                        // Store servo position
-                        servoCurrentPositions[mapping.jointIndex + 1] = newPosition;
-                        
-                        // Update servo status to pending
-                        servoCommStatus[mapping.jointIndex + 1].status = 'pending';
-                        updateServoStatusUI(mapping.jointIndex + 1, servoCommStatus[mapping.jointIndex + 1].status, servoCommStatus[mapping.jointIndex + 1].lastError);
-                        
-                        // Use queue system to control servo, prevent concurrent access
-                        writeServoPosition(mapping.jointIndex + 1, newPosition)
-                          .then(success => {
-                            if (success) {
-                              // Update last safe position
-                              servoLastSafePositions[mapping.jointIndex + 1] = newPosition;
-
-                              // Update servo status to success
-                              servoCommStatus[mapping.jointIndex + 1].status = 'success';
-                              updateServoStatusUI(mapping.jointIndex + 1, servoCommStatus[mapping.jointIndex + 1].status, servoCommStatus[mapping.jointIndex + 1].lastError);
-                            } else {
-                              // If servo movement failed, restore current position record
-                              servoCurrentPositions[mapping.jointIndex + 1] = servoLastSafePositions[mapping.jointIndex + 1];
-                              console.warn(`Failed to move servo ${mapping.jointIndex + 1}. Virtual joint not updated.`);
-                              
-                              // Show servo error alert
-                              showAlert('servo', `Servo ${mapping.jointIndex + 1} movement failed!`);
-                              
-                              // Try to move servo back to last safe position
-                              if (servoLastSafePositions[mapping.jointIndex + 1] !== servoCurrentPositions[mapping.jointIndex + 1]) {
-                                console.log(`Attempting to move servo ${mapping.jointIndex + 1} back to last safe position...`);
-                                writeServoPosition(mapping.jointIndex + 1, servoLastSafePositions[mapping.jointIndex + 1], true)
-                                  .then(recoverySuccess => {
-                                    if (recoverySuccess) {
-                                      console.log(`Successfully moved servo ${mapping.jointIndex + 1} back to safe position.`);
-                                      servoCurrentPositions[mapping.jointIndex + 1] = servoLastSafePositions[mapping.jointIndex + 1];
-                                    } else {
-                                      console.error(`Failed to move servo ${mapping.jointIndex + 1} back to safe position.`);
-                                      // Show servo recovery error alert
-                                      showAlert('servo', `Servo ${mapping.jointIndex + 1} could not recover to safe position!`, 4000);
-                                    }
-                                  })
-                                  .catch(error => {
-                                    console.error(`Error moving servo ${mapping.jointIndex + 1} back to safe position:`, error);
-                                    // Show servo recovery error alert
-                                    showAlert('servo', `Error recovering servo ${mapping.jointIndex + 1}: ${error.message || 'Unknown error'}`, 4000);
-                                  });
-                              }
-                            }
-                          })
-                          .catch(error => {
-                            // Servo control failed, don't update virtual joint, restore current position record
-                            servoCurrentPositions[mapping.jointIndex + 1] = servoLastSafePositions[mapping.jointIndex + 1];
-                            console.error(`Error controlling servo ${mapping.jointIndex + 1}:`, error);
-                            servoCommStatus[mapping.jointIndex + 1].status = 'error';
-                            servoCommStatus[mapping.jointIndex + 1].lastError = error.message || 'Communication error';
-                            updateServoStatusUI(mapping.jointIndex + 1, servoCommStatus[mapping.jointIndex + 1].status, servoCommStatus[mapping.jointIndex + 1].lastError);
-
-                            // Show servo error alert
-                            showAlert('servo', `Servo ${mapping.jointIndex + 1} error: ${error.message || 'Communication failed'}`);
-
-                            // Try to move servo back to last safe position
-                            if (servoLastSafePositions[mapping.jointIndex + 1] !== servoCurrentPositions[mapping.jointIndex + 1]) {
-                              console.log(`Attempting to move servo ${mapping.jointIndex + 1} back to last safe position...`);
-                              writeServoPosition(mapping.jointIndex + 1, servoLastSafePositions[mapping.jointIndex + 1], true)
-                                .then(recoverySuccess => {
-                                  if (recoverySuccess) {
-                                    console.log(`Successfully moved servo ${mapping.jointIndex + 1} back to safe position.`);
-                                    servoCurrentPositions[mapping.jointIndex + 1] = servoLastSafePositions[mapping.jointIndex + 1];
-                                  } else {
-                                    console.error(`Failed to move servo ${mapping.jointIndex + 1} back to safe position.`);
-                                    // Show servo recovery error alert
-                                    showAlert('servo', `Servo ${mapping.jointIndex + 1} could not recover to safe position!`, 4000);
-                                  }
-                                })
-                                .catch(error => {
-                                  console.error(`Error moving servo ${mapping.jointIndex + 1} back to safe position:`, error);
-                                  // Show servo recovery error alert
-                                  showAlert('servo', `Error recovering servo ${mapping.jointIndex + 1}: ${error.message || 'Unknown error'}`, 4000);
-                                });
-                            }
-                          });
-                      } else {
-                          // If not connected to real robot, just update virtual joint
-                          joint.setJointValue(newValue);
-                      }
-                  } else {
-                      showAlert('joint', `Joint ${jointType} has reached its limit!`);
+                  if (isConnectedToRealRobot) {
+                    servoCurrentPositions[servoId] = newPosition;
+                    servoCommStatus[servoId].status = 'pending';
+                    updateServoStatusUI(servoId, servoCommStatus[servoId].status, servoCommStatus[servoId].lastError);
+                    writeServoPosition(servoId, newPosition)
+                      .then(success => {
+                        if (success) {
+                          servoLastSafePositions[servoId] = newPosition;
+                          servoCommStatus[servoId].status = 'success';
+                          updateServoStatusUI(servoId, 'success', '');
+                        } else {
+                          servoCommStatus[servoId].status = 'error';
+                          updateServoStatusUI(servoId, 'error', 'Write failed');
+                        }
+                      })
+                      .catch(error => {
+                        servoCommStatus[servoId].status = 'error';
+                        servoCommStatus[servoId].lastError = error.message || 'Communication error';
+                        updateServoStatusUI(servoId, 'error', servoCommStatus[servoId].lastError);
+                        showAlert('servo', `Servo ${servoId} error: ${error.message || 'Communication failed'}`);
+                      });
                   }
+              } else {
+                  showAlert('joint', `Joint ${jointName} has reached its limit!`);
               }
-          }
-      };
-
-      // Process all mappings using button pairs
-      jointNames.forEach(jointName => {
-          if (gamepadMappings[jointName]) {
-              handleButtonPair(gamepadMappings[jointName], jointName);
           }
       });
 
