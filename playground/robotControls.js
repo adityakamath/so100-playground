@@ -70,6 +70,8 @@ const servoDirectionMapping = {
   6: false   // gripper servo
 };
 
+let isGamepadConnected = false;
+
 /**
  * Display alert message for joint limits or servo errors
  * @param {string} type - Alert type ('joint' or 'servo')
@@ -348,7 +350,6 @@ export function setupKeyboardControls(robot) {
  */
 export function setupGamepadControls(robot) {
   let gamepad = null;
-  let isGamepadConnected = false;
   const gamepadControlSection = document.getElementById('gamepadControlSection');
   const connectButton = document.getElementById('connectGamepad');
   let gamepadActiveTimeout;
@@ -1215,34 +1216,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize direction toggle buttons
     initDirectionToggles();
 });
-
-export function updateTargetPosition(sphere) {
-  if (!isGamepadConnected) return; // Only move sphere if gamepad is connected
-
-  const gamepads = navigator.getGamepads();
-  const gamepad = gamepads[0]; // Get first gamepad
-
-  if (gamepad) {
-    // Apply dead zone to joystick values
-    const deadZone = 0.1;
-    const applyDeadZone = (value) => {
-      if (Math.abs(value) < deadZone) {
-        return 0;
-      }
-      return value;
-    };
-
-    // Left joystick: X (left/right) and Y (front/back)
-    const leftX = applyDeadZone(gamepad.axes[0]); // Left/Right
-    const leftY = applyDeadZone(gamepad.axes[1]); // Front/Back
-
-    // Right joystick: Y (up/down) - reversed direction
-    const rightY = applyDeadZone(-gamepad.axes[3]); // Up/Down (negative to reverse direction)
-
-    // Apply movement with some speed factor
-    const speed = 0.1;
-    sphere.position.x += leftX * speed;
-    sphere.position.z += leftY * speed;
-    sphere.position.y += rightY * speed;
-  }
-}
