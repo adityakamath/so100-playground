@@ -1,6 +1,8 @@
-## SO-100 Playground
+## SO100 / SO101 Playground
 
 [so100-playground.vercel.app](https://so100-playground.vercel.app/)
+
+[so101-playground.vercel.app](https://so101-playground.vercel.app/)
 
 Inspired by and based on [so-arm100.bambot.org/](https://so-arm100.bambot.org/).
 
