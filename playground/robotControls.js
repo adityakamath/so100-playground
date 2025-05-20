@@ -1215,3 +1215,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize direction toggle buttons
     initDirectionToggles();
 });
+
+export function updateTargetPosition(sphere) {
+  if (!isGamepadConnected) return; // Only move sphere if gamepad is connected
+
+  const gamepads = navigator.getGamepads();
+  const gamepad = gamepads[0]; // Get first gamepad
+
+  if (gamepad) {
+    // Apply dead zone to joystick values
+    const deadZone = 0.1;
+    const applyDeadZone = (value) => {
+      if (Math.abs(value) < deadZone) {
+        return 0;
+      }
+      return value;
+    };
+
+    // Left joystick: X (left/right) and Y (front/back)
+    const leftX = applyDeadZone(gamepad.axes[0]); // Left/Right
+    const leftY = applyDeadZone(gamepad.axes[1]); // Front/Back
+
+    // Right joystick: Y (up/down) - reversed direction
+    const rightY = applyDeadZone(-gamepad.axes[3]); // Up/Down (negative to reverse direction)
+
+    // Apply movement with some speed factor
+    const speed = 0.1;
+    sphere.position.x += leftX * speed;
+    sphere.position.z += leftY * speed;
+    sphere.position.y += rightY * speed;
+  }
+}
