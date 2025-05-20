@@ -25,7 +25,7 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from 'urdf-loader';
 // 导入控制工具函数
-import { setupKeyboardControls, setupGamepadControls, setupControlPanel, isGamepadConnected, updateTargetPosition } from './robotControls.js';
+import { setupKeyboardControls, setupGamepadControls, setupControlPanel, updateTargetPosition } from './robotControls.js';
 
 // 声明为全局变量
 let scene, camera, renderer, controls;
