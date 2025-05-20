@@ -70,6 +70,8 @@ const servoDirectionMapping = {
   6: false   // gripper servo
 };
 
+export let isGamepadConnected = false;
+
 /**
  * Display alert message for joint limits or servo errors
  * @param {string} type - Alert type ('joint' or 'servo')
@@ -348,7 +350,6 @@ export function setupKeyboardControls(robot) {
  */
 export function setupGamepadControls(robot) {
   let gamepad = null;
-  let isGamepadConnected = false;
   const gamepadControlSection = document.getElementById('gamepadControlSection');
   const connectButton = document.getElementById('connectGamepad');
   let gamepadActiveTimeout;

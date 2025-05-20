@@ -19,17 +19,21 @@ import {
   CanvasTexture,
   Float32BufferAttribute,
   RepeatWrapping,
+  SphereGeometry,
+  MeshBasicMaterial,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from 'urdf-loader';
 // 导入控制工具函数
-import { setupKeyboardControls, setupGamepadControls, setupControlPanel } from './robotControls.js';
+import { setupKeyboardControls, setupGamepadControls, setupControlPanel, isGamepadConnected } from './robotControls.js';
 
 // 声明为全局变量
 let scene, camera, renderer, controls;
 // 将robot设为全局变量，便于其他模块访问
 window.robot = null;
 let keyboardUpdate, gamepadUpdate;
+// Make sphere globally accessible
+let sphere;
 
 init();
 render();
@@ -38,6 +42,12 @@ function init() {
 
   scene = new Scene();
   scene.background = new Color(0x263238);
+
+  // Add cyan sphere at origin
+  const sphereGeometry = new SphereGeometry(0.1, 32, 32);
+  const sphereMaterial = new MeshBasicMaterial({ color: 0x1f97f4 });
+  sphere = new Mesh(sphereGeometry, sphereMaterial);
+  scene.add(sphere);
 
   camera = new PerspectiveCamera();
   camera.position.set(5, 5, 5);
@@ -118,7 +128,7 @@ function init() {
   // 根据URL hash或默认加载模型
   function loadModelFromHash() {
     // 获取URL hash（去掉#号）
-    let modelToLoad = 'SO101';
+    let modelToLoad = 'SO100';
     
     // 加载模型
     const manager = new LoadingManager();
@@ -198,11 +208,46 @@ function onResize() {
 function render() {
   requestAnimationFrame(render);
   
-  // Update joint positions based on keyboard and gamepad input
+  // Update joint positions and target position based on keyboard and gamepad input
   if (keyboardUpdate) keyboardUpdate();
   if (gamepadUpdate) gamepadUpdate();
+  if (gamepadUpdate) updateTargetPosition();
   
   renderer.render(scene, camera);
+}
+
+// Add sphere movement function
+function updateTargetPosition() {
+  if (!isGamepadConnected) return; // Only move sphere if gamepad is connected
+
+  const gamepads = navigator.getGamepads();
+  const gamepad = gamepads[0]; // Get first gamepad
+  
+  if (gamepad) {
+    // Apply dead zone to joystick values
+    const deadZone = 0.1;
+    
+    // Helper function to apply dead zone
+    const applyDeadZone = (value) => {
+      if (Math.abs(value) < deadZone) {
+        return 0;
+      }
+      return value;
+    };
+    
+    // Left joystick: X (left/right) and Y (front/back)
+    const leftX = applyDeadZone(gamepad.axes[0]); // Left/Right
+    const leftY = applyDeadZone(gamepad.axes[1]); // Front/Back
+    
+    // Right joystick: Y (up/down) - reversed direction
+    const rightY = applyDeadZone(-gamepad.axes[3]); // Up/Down (negative to reverse direction)
+    
+    // Apply movement with some speed factor
+    const speed = 0.1;
+    sphere.position.x += leftX * speed;
+    sphere.position.z += leftY * speed;
+    sphere.position.y += rightY * speed;
+  }
 }
 
 // 添加创建格子纹理的函数
