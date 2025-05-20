@@ -25,7 +25,7 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from 'urdf-loader';
 // 导入控制工具函数
-import { setupKeyboardControls, setupGamepadControls, setupControlPanel, isGamepadConnected} from './robotControls.js';
+import { setupKeyboardControls, setupGamepadControls, setupControlPanel} from './robotControls.js';
 
 // 声明为全局变量
 let scene, camera, renderer, controls;
@@ -208,20 +208,16 @@ function onResize() {
 function render() {
   requestAnimationFrame(render);
   
-  // Update joint positions based on keyboard and gamepad input
+  // Update joint positions and target position based on keyboard and gamepad input
   if (keyboardUpdate) keyboardUpdate();
   if (gamepadUpdate) gamepadUpdate();
-  
-  // Update sphere position based on gamepad input
-  updateTargetPosition();
+  if (gamepadUpdate) updateTargetPosition();
   
   renderer.render(scene, camera);
 }
 
 // Add sphere movement function
 function updateTargetPosition() {
-  if (!isGamepadConnected) return; // Only move sphere if gamepad is connected
-
   const gamepads = navigator.getGamepads();
   const gamepad = gamepads[0]; // Get first gamepad
   

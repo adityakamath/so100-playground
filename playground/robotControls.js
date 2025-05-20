@@ -1215,5 +1215,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize direction toggle buttons
     initDirectionToggles();
 });
-
-export { isGamepadConnected };
