@@ -118,7 +118,7 @@ function init() {
   // 根据URL hash或默认加载模型
   function loadModelFromHash() {
     // 获取URL hash（去掉#号）
-    let modelToLoad = 'SO101';
+    let modelToLoad = 'SO100';
     
     // 加载模型
     const manager = new LoadingManager();
