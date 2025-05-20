@@ -177,7 +177,7 @@
   </link>
 
 
-  <!-- Joints -->
+  <!-- Joint from Base to Rotation_Pitch -->
   <joint name="Rotation" type="revolute">
     <parent link="Base"/>
     <child link="Rotation_Pitch"/>
@@ -186,48 +186,6 @@
     <limit lower="-2" upper="2" effort="35" velocity="1"/>
   </joint>
 
-  <joint name="Pitch" type="revolute">
-    <parent link="Rotation_Pitch"/>
-    <child link="Upper_Arm"/>
-    <origin xyz="0 0.1025 0.0306" rpy="-1.8 0 0"/>
-    <axis xyz="1 0 0"/>
-    <limit lower="0" upper="3.5" effort="35" velocity="1"/>
-  </joint>
-
-  <joint name="Elbow" type="revolute">
-    <parent link="Upper_Arm"/>
-    <child link="Lower_Arm"/>
-    <origin xyz="0 0.11257 0.028" rpy="1.57079 0 0"/>
-    <axis xyz="1 0 0"/>
-    <limit lower="-3.14158" upper="0" effort="35" velocity="1"/>
-  </joint>
-
-  <joint name="Wrist_Pitch" type="revolute">
-    <parent link="Lower_Arm"/>
-    <child link="Wrist_Pitch_Roll"/>
-    <origin xyz="0 0.0052 0.1349" rpy="-1 0 0"/>
-    <axis xyz="1 0 0"/>
-    <limit lower="-2.5" upper="1.2" effort="35" velocity="1"/>
-  </joint>
-
-  <joint name="Wrist_Roll" type="revolute">
-    <parent link="Wrist_Pitch_Roll"/>
-    <child link="Fixed_Jaw"/>
-    <origin xyz="0 -0.0601 0" rpy="0 1.57079 0"/>
-    <axis xyz="0 1 0"/>
-    <limit lower="-3.14158" upper="3.14158" effort="35" velocity="1"/>
-  </joint>
-
-  <joint name="Jaw" type="revolute">
-    <parent link="Fixed_Jaw"/>
-    <child link="Moving_Jaw"/>
-    <origin xyz="-0.0202 -0.0244 0" rpy="0 3.14158 0"/>
-    <axis xyz="0 0 1"/>
-    <limit lower="-0.2" upper="2.0" effort="35" velocity="1"/>
-  </joint>
-
-  
-  <!-- Transmission -->
   <transmission name="Rotation_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="Rotation">
@@ -238,6 +196,15 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
+
+  <!-- Joint from Rotation_Pitch to Upper_Arm -->
+  <joint name="Pitch" type="revolute">
+    <parent link="Rotation_Pitch"/>
+    <child link="Upper_Arm"/>
+    <origin xyz="0 0.1025 0.0306" rpy="-1.8 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="0" upper="3.5" effort="35" velocity="1"/>
+  </joint>
 
   <transmission name="Pitch_trans">
     <type>transmission_interface/SimpleTransmission</type>
@@ -250,6 +217,15 @@
     </actuator>
   </transmission>
 
+  <!-- Joint from Upper Arm to Lower Arm -->
+  <joint name="Elbow" type="revolute">
+    <parent link="Upper_Arm"/>
+    <child link="Lower_Arm"/>
+    <origin xyz="0 0.11257 0.028" rpy="1.57079 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-3.14158" upper="0" effort="35" velocity="1"/>
+  </joint>
+
   <transmission name="Elbow_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="Elbow">
@@ -260,6 +236,15 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
+
+  <!-- Joint from Lower_Arm to Wrist_Pitch_Roll -->
+  <joint name="Wrist_Pitch" type="revolute">
+    <parent link="Lower_Arm"/>
+    <child link="Wrist_Pitch_Roll"/>
+    <origin xyz="0 0.0052 0.1349" rpy="-1 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-2.5" upper="1.2" effort="35" velocity="1"/>
+  </joint>
 
   <transmission name="Wrist_Pitch_trans">
     <type>transmission_interface/SimpleTransmission</type>
@@ -272,6 +257,15 @@
     </actuator>
   </transmission>
 
+  <!-- Joint from Wrist_Pitch_Roll to Fixed_Jaw -->
+  <joint name="Wrist_Roll" type="revolute">
+    <parent link="Wrist_Pitch_Roll"/>
+    <child link="Fixed_Jaw"/>
+    <origin xyz="0 -0.0601 0" rpy="0 1.57079 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.14158" upper="3.14158" effort="35" velocity="1"/>
+  </joint>
+
   <transmission name="Wrist_Roll_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="Wrist_Roll">
@@ -283,6 +277,15 @@
     </actuator>
   </transmission>
 
+<!-- Joint from Fixed_Jaw to Moving_Jaw -->
+  <joint name="Jaw" type="revolute">
+    <parent link="Fixed_Jaw"/>
+    <child link="Moving_Jaw"/>
+    <origin xyz="-0.0202 -0.0244 0" rpy="0 3.14158 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.2" upper="2.0" effort="35" velocity="1"/>
+  </joint>
+
   <transmission name="Jaw_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="Jaw">
@@ -293,4 +296,5 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
+
 </robot> 
