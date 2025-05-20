@@ -1,61 +1,67 @@
-# SO100/SO101 Playground
+# Playground
 
-A browser-based application for simulating and controlling SO-100 and SO-101 robotic arms. This platform allows users to visualize, interact with, and control both virtual and real robot arms in real time.
+A browser-based application for running simulations and controlling Bambot and SO100 arm. This interactive platform allows users to visualize and manipulate robotic models in real-time.
 
 ## Features
 
-- 3D visualization of SO-100 and SO-101 robot arms
-- Real robot control via Web Serial API (Feetech SCS servos, IDs 1-6)
-- Simultaneous control of virtual and real robots
-- Keyboard and gamepad input support
-- Per-servo direction inversion toggles (with persistent settings)
-- Adjustable movement speed
-- Visual feedback for joint/servo status and limits
-- Help tooltips for controls and servo status
+- Virtual robot arm visualization and control
+- Real robot control via Web Serial API
+- Keyboard and gamepad control for both virtual and real robots simultaneously
+- Support for multiple robot models
+- Customizable gamepad button mappings
 
 ## Controls
 
 ### Keyboard Controls
-- **Rotation**: 1 / Q
-- **Pitch**: 2 / W
-- **Elbow**: 3 / E
-- **Wrist Pitch**: 4 / R
-- **Wrist Roll**: 5 / T
-- **Jaw**: 6 / Y
-
+- Use arrow keys and WASD for controlling the robot arm
+- Press 'R' to reset the arm position
+- Press 'Space' to toggle between simulation and real robot mode
 
 ### Gamepad Controls
+The application supports gamepad input using the Gamepad API. Connect any compatible gamepad to control the robot arm:
+
+#### Default Button Mappings
 - **Rotation**: Face Right (button 1) / Face Left (button 2)
 - **Pitch**: Face Top (button 3) / Face Bottom (button 0)
-- **Elbow**: R2 (button 7) / R1 (button 5)
+- **Elbow**: R1 (button 5) / L1 (button 4)
 - **Wrist Pitch**: D-Up (button 12) / D-Down (button 13)
 - **Wrist Roll**: D-Right (button 15) / D-Left (button 14)
-- **Jaw**: L2 (button 6) / L1 (button 4)
-- Real-time button highlighting and support for PlayStation, Xbox, and Nintendo layouts
+- **Jaw**: R2 (button 7) / L2 (button 6)
+
+#### Gamepad Features
+- Real-time button highlighting when pressed
+- Support for multiple gamepad types (Xbox, PlayStation, generic)
+- Automatic gamepad detection and connection
+- Visual feedback for button presses and joint limits
 
 ## Real Robot Control
 
-- Connect to a real robot using the "Connect Real Robot" button (requires Chrome/Edge with Web Serial API)
-- Keyboard and gamepad controls move both the virtual and real robot simultaneously
-- Movement speed is adjustable via the speed slider
-- Each servo's direction can be inverted using the toggle buttons next to their status indicators
-- Servo status (idle, pending, success, error, warning) is displayed for each joint
+The application now supports controlling real robot arms with Feetech SCS servo motors (ID 1-6) using the Web Serial API. When connected to a real robot:
 
-### How It Works
-- On connection, the app reads the current positions of all servos
-- All commands are relative to the current position, ensuring correct behavior regardless of initial pose
-- Direction toggles allow you to invert individual servo movements if needed
-- Status indicators and alerts provide feedback for joint limits and servo errors
+1. Keyboard and gamepad controls will simultaneously move both the virtual and real robot
+2. Robot movement speed can be adjusted using the speed slider
+3. The real robot connection can be toggled using the "Connect Real Robot" button in the control panel
+4. Each servo's direction can be inverted using the direction toggle buttons next to their status indicators
 
-## Requirements
-- Chrome or Edge browser with Web Serial API support
+### How it Works
+
+The system uses a relative movement approach:
+1. When connecting, it reads the current positions of all servos 
+2. Keyboard and gamepad commands apply relative position changes rather than absolute positions
+3. This ensures the real robot responds properly regardless of its initial position
+4. Direction toggles allow you to invert individual servo movements if they're rotating in the wrong direction
+
+### Connection Requirements
+
+- Chrome or Edge browser that supports Web Serial API
 - USB-to-Serial adapter connected to the robot's servo bus
 - Servo IDs configured from 1 to 6 (matching the joint numbers)
+- Fixed baudrate: 1,000,000 bps
+- Fixed protocol: SCS (1)
 
-## Usage
+### Usage
+
 1. Open the application in a supported browser
-2. Click "Connect Real Robot" to connect to hardware (optional)
-3. Use keyboard or gamepad controls to move the robot
-4. Adjust speed and direction toggles as needed
-
-Note: ensure your physical robot's position matches the virtual robot's position before connecting
+2. Click "Connect Real Robot" in the control panel
+3. Select the appropriate serial port when prompted
+4. Use keyboard controls (Q/A, W/S, etc.) or connect a gamepad to move both virtual and real robots
