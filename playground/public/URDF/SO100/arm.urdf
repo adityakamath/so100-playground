@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
-<robot name="so_arm100">
+<robot name="so100">
+
   <!-- Materials -->
-  <material name="green">
+  <material name="3d_printed">
     <color rgba="0.06 0.4 0.1 1.0"/>
   </material>
-  <material name="black">
+  <material name="sts3215">
     <color rgba="0.1 0.1 0.1 1.0"/>
   </material>
 
@@ -20,13 +21,13 @@
       <geometry>
         <mesh filename="meshes/Base.stl"/>
       </geometry>
-      <material name="green"/>
+      <material name="3d_printed"/>
     </visual>
     <visual>
       <geometry>
         <mesh filename="meshes/Base_Motor.stl"/>
       </geometry>
-      <material name="black"/>
+      <material name="sts3215"/>
     </visual>
     <collision>
       <geometry>
@@ -46,13 +47,13 @@
       <geometry>
         <mesh filename="meshes/Rotation_Pitch.stl"/>
       </geometry>
-      <material name="green"/>
+      <material name="3d_printed"/>
     </visual>
     <visual>
       <geometry>
         <mesh filename="meshes/Rotation_Pitch_Motor.stl"/>
       </geometry>
-      <material name="black"/>
+      <material name="sts3215"/>
     </visual>
     <collision>
       <geometry>
@@ -72,13 +73,13 @@
       <geometry>
         <mesh filename="meshes/Upper_Arm.stl"/>
       </geometry>
-      <material name="green"/>
+      <material name="3d_printed"/>
     </visual>
     <visual>
       <geometry>
         <mesh filename="meshes/Upper_Arm_Motor.stl"/>
       </geometry>
-      <material name="black"/>
+      <material name="sts3215"/>
     </visual>
     <collision>
       <geometry>
@@ -98,13 +99,13 @@
       <geometry>
         <mesh filename="meshes/Lower_Arm.stl"/>
       </geometry>
-      <material name="green"/>
+      <material name="3d_printed"/>
     </visual>
     <visual>
       <geometry>
         <mesh filename="meshes/Lower_Arm_Motor.stl"/>
       </geometry>
-      <material name="black"/>
+      <material name="sts3215"/>
     </visual>
     <collision>
       <geometry>
@@ -124,13 +125,13 @@
       <geometry>
         <mesh filename="meshes/Wrist_Pitch_Roll.stl"/>
       </geometry>
-      <material name="green"/>
+      <material name="3d_printed"/>
     </visual>
     <visual>
       <geometry>
         <mesh filename="meshes/Wrist_Pitch_Roll_Motor.stl"/>
       </geometry>
-      <material name="black"/>
+      <material name="sts3215"/>
     </visual>
     <collision>
       <geometry>
@@ -150,13 +151,13 @@
       <geometry>
         <mesh filename="meshes/Fixed_Jaw.stl"/>
       </geometry>
-      <material name="green"/>
+      <material name="3d_printed"/>
     </visual>
     <visual>
       <geometry>
         <mesh filename="meshes/Fixed_Jaw_Motor.stl"/>
       </geometry>
-      <material name="black"/>
+      <material name="sts3215"/>
     </visual>
   </link>
 
@@ -171,7 +172,7 @@
       <geometry>
         <mesh filename="meshes/Moving_Jaw.stl"/>
       </geometry>
-      <material name="green"/>
+      <material name="3d_printed"/>
     </visual>
   </link>
 
