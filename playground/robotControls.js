@@ -62,7 +62,7 @@ let currentGamepadType = 'ps'; // Default to PlayStation layout
 
 // Servo direction mapping (true = reversed, false = normal)
 const servoDirectionMapping = {
-  1: false,  // base rotation servo
+  1: true,  // base rotation servo
   2: false,  // shoulder servo
   3: false,  // elbow servo
   4: false,  // wrist pitch servo
