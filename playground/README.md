@@ -64,4 +64,4 @@ The system uses a relative movement approach:
 1. Open the application in a supported browser
 2. Click "Connect Real Robot" in the control panel
 3. Select the appropriate serial port when prompted
-4. Use keyboard controls (Q/A, W/S, etc.) or connect a gamepad to move both virtual and real robots
+4. Use keyboard controls or connect a gamepad to move both virtual and real robots
