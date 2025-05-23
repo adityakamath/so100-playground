@@ -12,62 +12,62 @@
   <!-- Base Link -->
   <link name="Base">
     <inertial>
-      <origin xyz="0.020739 0.00204287 0.065966" rpy="0 0 0"/>
+      <origin xyz="-0.0000519 -0.02008263 0.0358843" rpy="0 0 0"/>
       <mass value="0.147"/>
       <inertia ixx="0.000136117" ixy="4.59787e-07" ixz="9.75275e-08" iyy="0.000114686" iyz="-4.97151e-06" izz="0.000130364"/>
     </inertial>
     <!-- Part base_motor_holder_so101_v1 -->
     <visual>
-      <origin xyz="0.0206915 0.0221255 0.0300817" rpy="1.5708 -1.23909e-16 2.33147e-15"/>
+      <origin xyz="-0.0000994 0 0" rpy="1.5708 -1.23909e-16 2.33147e-15"/>
       <geometry>
         <mesh filename="meshes/base_motor_holder_so101_v1.stl"/>
       </geometry>
       <material name="3d_printed"/>
     </visual>
     <collision>
-      <origin xyz="0.0206915 0.0221255 0.0300817" rpy="1.5708 -1.23909e-16 2.33147e-15"/>
+      <origin xyz="-0.0000994 0 0" rpy="1.5708 -1.23909e-16 2.33147e-15"/>
       <geometry>
         <mesh filename="meshes/base_motor_holder_so101_v1.stl"/>
       </geometry>
     </collision>
     <!-- Part base_so101_v2 -->
     <visual>
-      <origin xyz="0.0207909 0.0221255 0.0300817" rpy="1.5708 -0 0"/>
+      <origin xyz="0 0 0" rpy="1.5708 -0 0"/>
       <geometry>
         <mesh filename="meshes/base_so101_v2.stl"/>
       </geometry>
       <material name="3d_printed"/>
     </visual>
     <collision>
-      <origin xyz="0.0207909 0.0221255 0.0300817" rpy="1.5708 -0 0"/>
+      <origin xyz="0 0 0" rpy="1.5708 -0 0"/>
       <geometry>
         <mesh filename="meshes/base_so101_v2.stl"/>
       </geometry>
     </collision>
     <!-- Part sts3215_03a_v1 -->
     <visual>
-      <origin xyz="0.0207909 -0.0105745 0.0761817" rpy="-2.20282e-15 2.77556e-17 -1.5708"/>
+      <origin xyz="0 -0.0327 0.0461" rpy="-2.20282e-15 2.77556e-17 -1.5708"/>
       <geometry>
         <mesh filename="meshes/sts3215_03a_v1.stl"/>
       </geometry>
       <material name="sts3215"/>
     </visual>
     <collision>
-      <origin xyz="0.0207909 -0.0105745 0.0761817" rpy="-2.20282e-15 2.77556e-17 -1.5708"/>
+      <origin xyz="0 -0.0327 0.0461" rpy="-2.20282e-15 2.77556e-17 -1.5708"/>
       <geometry>
         <mesh filename="meshes/sts3215_03a_v1.stl"/>
       </geometry>
     </collision>
     <!-- Part waveshare_mounting_plate_so101_v2 -->
     <visual>
-      <origin xyz="0.0205915 0.0467435 0.0798817" rpy="1.5708 -1.21716e-14 2.33147e-15"/>
+      <origin xyz="-0.0001994 0.024618 0.0498" rpy="1.5708 -1.21716e-14 2.33147e-15"/>
       <geometry>
         <mesh filename="meshes/waveshare_mounting_plate_so101_v2.stl"/>
       </geometry>
       <material name="3d_printed"/>
     </visual>
     <collision>
-      <origin xyz="0.0205915 0.0467435 0.0798817" rpy="1.5708 -1.21716e-14 2.33147e-15"/>
+      <origin xyz="-0.0001994 0.024618 0.0498" rpy="1.5708 -1.21716e-14 2.33147e-15"/>
       <geometry>
         <mesh filename="meshes/waveshare_mounting_plate_so101_v2.stl"/>
       </geometry>
@@ -312,7 +312,7 @@
 
   <!-- Joint from Base to Rotation_Pitch -->
   <joint name="Rotation" type="revolute">
-    <origin xyz="0.0207909 -0.0230745 0.0948817" rpy="-3.14159 6.03684e-16 1.5708"/>
+    <origin xyz="0 -0.0452 0.0648" rpy="-3.14159 6.03684e-16 1.5708"/>
     <parent link="Base"/>
     <child link="Rotation_Pitch"/>
     <axis xyz="0 0 1"/>
