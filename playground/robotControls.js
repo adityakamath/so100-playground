@@ -71,6 +71,7 @@ const servoDirectionMapping = {
 };
 
 export let isGamepadConnected = false;
+export let isIKToggleEnabled = true;
 
 /**
  * Display alert message for joint limits or servo errors
@@ -616,6 +617,8 @@ export function setupControlPanel() {
       alert('VR connection will be implemented in the future.');
     });
   }
+
+  setupIKToggle();
 }
 
 /**
@@ -1216,3 +1219,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize direction toggle buttons
     initDirectionToggles();
 });
+
+function setupIKToggle() {
+  const toggleButton = document.getElementById('ikToggle');
+  if (!toggleButton) return;
+  toggleButton.disabled = false;
+  isIKToggleEnabled = true;
+  toggleButton.textContent = 'IK Target (Enabled)';
+  toggleButton.classList.remove('disabled');
+
+  toggleButton.addEventListener('click', () => {
+    isIKToggleEnabled = !isIKToggleEnabled;
+    if (isIKToggleEnabled) {
+      toggleButton.textContent = 'IK Target (Enabled)';
+      toggleButton.classList.remove('disabled');
+    } else {
+      toggleButton.textContent = 'IK Target (Disabled)';
+      toggleButton.classList.add('disabled');
+    }
+  });
+}
