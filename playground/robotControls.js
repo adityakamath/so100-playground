@@ -71,7 +71,7 @@ const servoDirectionMapping = {
 };
 
 export let isGamepadConnected = false;
-export let isIKToggleEnabled = true;
+export let isIKToggleEnabled = false;
 
 /**
  * Display alert message for joint limits or servo errors

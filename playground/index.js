@@ -34,7 +34,6 @@ window.robot = null;
 let keyboardUpdate, gamepadUpdate;
 // Make sphere globally accessible
 let sphere;
-let lastIKTargetPosition = new THREE.Vector3();
 
 init();
 render();
@@ -162,9 +161,6 @@ function init() {
       keyboardUpdate = setupKeyboardControls(window.robot);
       // Initialize gamepad controls
       gamepadUpdate = setupGamepadControls(window.robot);
-
-      // Initialize lastIKTargetPosition after sphere is created
-      lastIKTargetPosition.copy(sphere.position);
     };
   }
 
@@ -218,20 +214,14 @@ function render() {
   if (gamepadUpdate) updateTargetPosition();
   
   // Toggle sphere visibility based on IK toggle
-  if (isIKToggleEnabled) {
-    sphere.visible = true;
-  } else {
-    sphere.visible = false;
-    // Lock sphere to last known position
-    sphere.position.copy(lastIKTargetPosition);
-  }
-  
+  if (sphere) sphere.visible = isIKToggleEnabled;
+
   renderer.render(scene, camera);
 }
 
 // Add sphere movement function
 function updateTargetPosition() {
-  if (!isGamepadConnected || !isIKToggleEnabled) return; // Only move sphere if gamepad is connected and IK is enabled
+  if (!isGamepadConnected) return; // Only move sphere if gamepad is connected
 
   const gamepads = navigator.getGamepads();
   const gamepad = gamepads[0]; // Get first gamepad
@@ -261,9 +251,6 @@ function updateTargetPosition() {
     sphere.position.z += leftY * speed;
     sphere.position.y += rightY * speed;
   }
-
-  // After moving the sphere, update lastIKTargetPosition
-  lastIKTargetPosition.copy(sphere.position);
 }
 
 // 添加创建格子纹理的函数
