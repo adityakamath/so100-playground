@@ -312,7 +312,7 @@
 
   <!-- Joint from Base to Rotation_Pitch -->
   <joint name="Rotation" type="revolute">
-    <origin xyz="0 -0.0452 0.0648" rpy="-3.14159 6.03684e-16 1.5708"/>
+    <origin xyz="0 -0.0452 0.0648" rpy="0 0 1.5708"/>
     <parent link="Base"/>
     <child link="Rotation_Pitch"/>
     <axis xyz="0 0 1"/>
