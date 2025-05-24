@@ -25,7 +25,7 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from 'urdf-loader';
 // 导入控制工具函数
-import { setupKeyboardControls, setupGamepadControls, setupControlPanel, isGamepadConnected } from './robotControls.js';
+import { setupKeyboardControls, setupGamepadControls, setupControlPanel, isGamepadConnected, isIKToggleEnabled } from './robotControls.js';
 
 // 声明为全局变量
 let scene, camera, renderer, controls;
@@ -34,6 +34,7 @@ window.robot = null;
 let keyboardUpdate, gamepadUpdate;
 // Make sphere globally accessible
 let sphere;
+let lastIKTargetPosition = new THREE.Vector3();
 
 init();
 render();
@@ -161,6 +162,9 @@ function init() {
       keyboardUpdate = setupKeyboardControls(window.robot);
       // Initialize gamepad controls
       gamepadUpdate = setupGamepadControls(window.robot);
+
+      // Initialize lastIKTargetPosition after sphere is created
+      lastIKTargetPosition.copy(sphere.position);
     };
   }
 
@@ -213,12 +217,21 @@ function render() {
   if (gamepadUpdate) gamepadUpdate();
   if (gamepadUpdate) updateTargetPosition();
   
+  // Toggle sphere visibility based on IK toggle
+  if (isIKToggleEnabled) {
+    sphere.visible = true;
+  } else {
+    sphere.visible = false;
+    // Lock sphere to last known position
+    sphere.position.copy(lastIKTargetPosition);
+  }
+  
   renderer.render(scene, camera);
 }
 
 // Add sphere movement function
 function updateTargetPosition() {
-  if (!isGamepadConnected) return; // Only move sphere if gamepad is connected
+  if (!isGamepadConnected || !isIKToggleEnabled) return; // Only move sphere if gamepad is connected and IK is enabled
 
   const gamepads = navigator.getGamepads();
   const gamepad = gamepads[0]; // Get first gamepad
@@ -248,6 +261,9 @@ function updateTargetPosition() {
     sphere.position.z += leftY * speed;
     sphere.position.y += rightY * speed;
   }
+
+  // After moving the sphere, update lastIKTargetPosition
+  lastIKTargetPosition.copy(sphere.position);
 }
 
 // 添加创建格子纹理的函数
