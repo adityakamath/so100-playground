@@ -1226,16 +1226,19 @@ function setupIKToggle() {
   toggleButton.disabled = false;
   isIKToggleEnabled = true;
   toggleButton.textContent = 'IK Target (Enabled)';
+  toggleButton.classList.add('connect-button', 'connected');
   toggleButton.classList.remove('disabled');
 
   toggleButton.addEventListener('click', () => {
     isIKToggleEnabled = !isIKToggleEnabled;
     if (isIKToggleEnabled) {
       toggleButton.textContent = 'IK Target (Enabled)';
+      toggleButton.classList.add('connected');
       toggleButton.classList.remove('disabled');
     } else {
       toggleButton.textContent = 'IK Target (Disabled)';
-      toggleButton.classList.add('disabled');
+      toggleButton.classList.remove('connected');
+      toggleButton.classList.remove('disabled');
     }
   });
 }
