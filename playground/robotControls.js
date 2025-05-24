@@ -1224,9 +1224,10 @@ function setupIKToggle() {
   const toggleButton = document.getElementById('ikToggle');
   if (!toggleButton) return;
   toggleButton.disabled = false;
-  isIKToggleEnabled = true;
-  toggleButton.textContent = 'Disable IK Target';
-  toggleButton.classList.add('connect-button', 'connected');
+  isIKToggleEnabled = false;
+  toggleButton.textContent = 'Enable IK Target';
+  toggleButton.classList.add('connect-button');
+  toggleButton.classList.remove('connected');
 
   toggleButton.addEventListener('click', () => {
     isIKToggleEnabled = !isIKToggleEnabled;
