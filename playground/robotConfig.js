@@ -2,9 +2,9 @@
 
 // 基础机器人配置
 const robotConfigs = {
-  // so_arm100 配置
-  so_arm100: {
-    name: 'SO_ARM100',
+  // so101 配置
+  so101: {
+    name: 'SO101',
     type: 'arm',
     servos: {
       arm: 6, // 机械臂有6个舵机

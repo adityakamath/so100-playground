@@ -1,6 +1,6 @@
 ## SO-Arm Playground
 
-A browser-based application for simulating and controlling SO-100 and SO-101 (default) robotic arms. This platform allows users to visualize, interact with, and control both virtual and real robot arms in real time.
+A browser-based application for simulating and controlling SO-100 and SO-101 robotic arms. This platform allows users to visualize, interact with, and control both virtual and real robot arms in real time.
 
 [so-arm-playground.vercel.app](https://so-arm-playground.vercel.app/)
 
