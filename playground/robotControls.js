@@ -1225,20 +1225,17 @@ function setupIKToggle() {
   if (!toggleButton) return;
   toggleButton.disabled = false;
   isIKToggleEnabled = true;
-  toggleButton.textContent = 'IK Target (Enabled)';
+  toggleButton.textContent = 'Disable IK Target';
   toggleButton.classList.add('connect-button', 'connected');
-  toggleButton.classList.remove('disabled');
 
   toggleButton.addEventListener('click', () => {
     isIKToggleEnabled = !isIKToggleEnabled;
     if (isIKToggleEnabled) {
-      toggleButton.textContent = 'IK Target (Enabled)';
+      toggleButton.textContent = 'Disable IK Target';
       toggleButton.classList.add('connected');
-      toggleButton.classList.remove('disabled');
     } else {
-      toggleButton.textContent = 'IK Target (Disabled)';
+      toggleButton.textContent = 'Enable IK Target';
       toggleButton.classList.remove('connected');
-      toggleButton.classList.remove('disabled');
     }
   });
 }
