@@ -25,7 +25,7 @@ import {
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import URDFLoader from 'urdf-loader';
 // 导入控制工具函数
-import { setupKeyboardControls, setupGamepadControls, setupControlPanel, isGamepadConnected } from './robotControls.js';
+import { setupKeyboardControls, setupGamepadControls, setupControlPanel, isGamepadConnected, isIKToggleEnabled } from './robotControls.js';
 
 // 声明为全局变量
 let scene, camera, renderer, controls;
@@ -213,12 +213,15 @@ function render() {
   if (gamepadUpdate) gamepadUpdate();
   if (gamepadUpdate) updateTargetPosition();
   
+  // Toggle sphere visibility based on IK toggle
+  if (sphere) sphere.visible = isIKToggleEnabled;
+
   renderer.render(scene, camera);
 }
 
 // Add sphere movement function
 function updateTargetPosition() {
-  if (!isGamepadConnected) return; // Only move sphere if gamepad is connected
+  if (!isGamepadConnected || !isIKToggleEnabled) return; // Only move sphere if gamepad is connected and IK is enabled
 
   const gamepads = navigator.getGamepads();
   const gamepad = gamepads[0]; // Get first gamepad

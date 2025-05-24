@@ -62,7 +62,7 @@ let currentGamepadType = 'ps'; // Default to PlayStation layout
 
 // Servo direction mapping (true = reversed, false = normal)
 const servoDirectionMapping = {
-  1: true,   // base rotation servo
+  1: true,  // base rotation servo
   2: false,  // shoulder servo
   3: false,  // elbow servo
   4: false,  // wrist pitch servo
@@ -71,6 +71,7 @@ const servoDirectionMapping = {
 };
 
 export let isGamepadConnected = false;
+export let isIKToggleEnabled = false;
 
 /**
  * Display alert message for joint limits or servo errors
@@ -616,6 +617,8 @@ export function setupControlPanel() {
       alert('VR connection will be implemented in the future.');
     });
   }
+
+  setupIKToggle();
 }
 
 /**
@@ -1216,3 +1219,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize direction toggle buttons
     initDirectionToggles();
 });
+
+function setupIKToggle() {
+  const toggleButton = document.getElementById('ikToggle');
+  if (!toggleButton) return;
+  toggleButton.disabled = false;
+  isIKToggleEnabled = false;
+  toggleButton.textContent = 'Enable IK Target';
+  toggleButton.classList.add('connect-button');
+  toggleButton.classList.remove('connected');
+
+  toggleButton.addEventListener('click', () => {
+    isIKToggleEnabled = !isIKToggleEnabled;
+    if (isIKToggleEnabled) {
+      toggleButton.textContent = 'Disable IK Target';
+      toggleButton.classList.add('connected');
+    } else {
+      toggleButton.textContent = 'Enable IK Target';
+      toggleButton.classList.remove('connected');
+    }
+  });
+}

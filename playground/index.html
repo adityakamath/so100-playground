@@ -689,7 +689,7 @@
     </head>
     <body>
         <div class="controls">
-            <a class="github-button" href="https://github.com/adityakamath/so100-playground" data-color-scheme="no-preference: light; light: light; dark: dark;" aria-label="Star adityakamath/so100-playground on GitHub">Star</a>
+            <a class="github-button" href="https://github.com/adityakamath/so-arm-playground" data-color-scheme="no-preference: light; light: light; dark: dark;" aria-label="Star adityakamath/so-arm-playground on GitHub">Star</a>
         </div>
         
         <!-- 添加舵机限位和错误提醒框 -->
@@ -806,6 +806,20 @@
                             <div class="joint-control">
                                 <div class="joint-name">Jaw:</div>
                                 <div class="joint-keys"><span class="key" data-key="jawPlus" data-ps="L2" data-nintendo="L2" data-xbox="L2">L2</span> <span class="direction-plus">+</span> <span class="key" data-key="jawMinus" data-ps="L1" data-nintendo="L1" data-xbox="L1">L1</span> <span class="direction-minus">-</span></div>
+                            </div>
+                        </div>
+                        <div class="help-wrapper" style="margin-top: 15px;">
+                            <button id="ikToggle" class="connect-button" style="width: 100%;">Enable IK Target</button>
+                            <div class="help-icon">?
+                                <div class="tooltip">
+                                    <strong>IK Target Visibility Toggle:</strong>
+                                    <ul>
+                                        <li>Enable or disable the visibility of the IK target for the robot arm</li>
+                                        <li>The target can be moved around in 3D space using the gamepad joysticks</li>
+                                        <li>Left joystick controls the position of the target in the X-Y (ground) plane</li>
+                                        <li>Right joystick controls the position of the target in the Z (up/down) direction</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
