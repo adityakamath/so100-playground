@@ -221,7 +221,7 @@ function render() {
 
 // Add sphere movement function
 function updateTargetPosition() {
-  if (!isGamepadConnected) return; // Only move sphere if gamepad is connected
+  if (!isGamepadConnected || !isIKToggleEnabled) return; // Only move sphere if gamepad is connected and IK is enabled
 
   const gamepads = navigator.getGamepads();
   const gamepad = gamepads[0]; // Get first gamepad
